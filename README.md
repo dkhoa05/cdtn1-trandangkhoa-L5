@@ -15,27 +15,31 @@ cảnh báo khi tồn dưới ngưỡng, và ghi nhận nhập kho — giải qu
 phiếu rồi mới biết hết linh kiện, phải hẹn lại khách).
 
 ## 2. Yêu cầu môi trường
-Node.js 20 LTS
+Python 3.11+
 PostgreSQL 16
 Biến môi trường: xem .env.example
 
+Ghi chú lựa chọn công nghệ: track SE gợi ý Node/Express hoặc Spring Boot; chọn Python/Flask
+thay thế vì đã có kinh nghiệm sẵn với Python, giúp tập trung vào logic nghiệp vụ thay vì học
+ngôn ngữ mới.
+
 ## 3. Hướng dẫn chạy
 (BT2 yêu cầu ≤ 4 bước — cập nhật đầy đủ ở buổi 8–12)
-1. cp .env.example .env và điền giá trị
-2. npm install
-3. npm run db:migrate
-4. npm run dev → mở http://localhost:3000/health
+1. python -m venv venv && venv\Scripts\activate (Windows) rồi cp .env.example .env và điền giá trị
+2. pip install -r requirements.txt
+3. flask db upgrade (hoặc script migrate tương ứng)
+4. flask run → mở http://localhost:5000/health
 
 ## 4. Cấu trúc thư mục
 - docs/ — tài liệu kỹ thuật (SRS, ERD, kiến trúc, khai báo AI)
-- src/api/ — endpoint Express
+- src/api/ — route/endpoint Flask
 - src/service/ — business logic (kiểm tra tồn kho, sinh cảnh báo)
 - src/repository/ — truy vấn PostgreSQL
 - tests/ — unit test và integration test
 - data/sample/ — mẫu nhỏ từ parts.csv/part_stock.csv/part_transactions.csv (không commit dữ liệu gốc)
 
 ## 5. Kiểm thử
-npm test → hiển thị số test PASS
+pytest → hiển thị số test PASS
 
 ## 6. Trạng thái hiện tại
 [ ] Khởi tạo project, smoke test chạy được (buổi 2)
