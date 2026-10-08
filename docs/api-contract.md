@@ -1,4 +1,4 @@
-# Hợp đồng API — Luồng L5: Kho linh kiện thay thế
+# Hợp đồng API luồng L5: Kho linh kiện thay thế
 
 ## A1. Danh sách endpoint
 
@@ -20,9 +20,9 @@
 - Phân trang: tham số `page` (bắt đầu từ 1) và `size` (mặc định 20, tối đa 100). Response kèm `total`.
 - Mọi lỗi trả về cùng cấu trúc: `{ "error": { "code": "...", "message": "...", "fields": {...} } }`.
 
-## A3. Chi tiết endpoint — POST /api/tickets/{ticket_id}/parts
+## A3. POST /api/tickets/{ticket_id}/parts
 
-Xuất linh kiện cho phiếu bảo hành · US2, US3 · liên quan UC2, QT-09
+Xuất linh kiện cho phiếu bảo hành (US2, US3, UC2, QT-09).
 
 **REQUEST BODY**
 ```json
@@ -45,7 +45,7 @@ Xuất linh kiện cho phiếu bảo hành · US2, US3 · liên quan UC2, QT-09
 }
 ```
 
-**RESPONSE 400 Bad Request** — dữ liệu không hợp lệ
+**RESPONSE 400 Bad Request**: dữ liệu không hợp lệ  
 ```json
 {
   "error": {
@@ -56,9 +56,9 @@ Xuất linh kiện cho phiếu bảo hành · US2, US3 · liên quan UC2, QT-09
 }
 ```
 
-**RESPONSE 404 Not Found** — `ticket_id` hoặc `part_id` không tồn tại
-**RESPONSE 409 Conflict** — số lượng xuất vượt quá tồn kho hiện tại (QT-09)
-**RESPONSE 422 Unprocessable** — phiếu không ở trạng thái "Đang xử lý"
+**RESPONSE 404 Not Found**: `ticket_id` hoặc `part_id` không tồn tại  
+**RESPONSE 409 Conflict**: số lượng xuất vượt quá tồn kho hiện tại (QT-09)  
+**RESPONSE 422 Unprocessable**: phiếu không ở trạng thái "Đang xử lý"  
 
 ### Bảng validation
 
@@ -67,9 +67,9 @@ Xuất linh kiện cho phiếu bảo hành · US2, US3 · liên quan UC2, QT-09
 | part_id | Có | Số nguyên dương, phải tồn tại trong `part_stock` của trung tâm chứa phiếu | Không tìm thấy linh kiện tại trung tâm này |
 | quantity | Có | Số nguyên dương, ≤ tồn kho hiện tại của linh kiện (QT-09) | Số lượng xuất vượt quá tồn kho |
 
-## A4. Chi tiết endpoint — GET /api/parts
+## A4. GET /api/parts
 
-Tra cứu / tìm kiếm linh kiện · US1 · liên quan UC1
+Tra cứu / tìm kiếm linh kiện (US1, UC1).
 
 **RESPONSE 200 OK**
 ```json
@@ -89,11 +89,11 @@ Tra cứu / tìm kiếm linh kiện · US1 · liên quan UC1
 }
 ```
 
-**RESPONSE 403 Forbidden** — `center_id` trong query không khớp trung tâm của người dùng đăng nhập (QT-14)
+**RESPONSE 403 Forbidden**: `center_id` trong query không khớp trung tâm của người dùng đăng nhập (QT-14)  
 
-## A5. Chi tiết endpoint — POST /api/parts/{part_id}/stock-in
+## A5. POST /api/parts/{part_id}/stock-in
 
-Nhập kho linh kiện · US5 · liên quan UC3
+Nhập kho linh kiện (US5, UC3).
 
 **REQUEST BODY**
 ```json
@@ -122,9 +122,9 @@ Nhập kho linh kiện · US5 · liên quan UC3
 | center_id | Có | Số nguyên dương, phải tồn tại | Trung tâm không hợp lệ |
 | quantity | Có | Số nguyên dương | Số lượng nhập phải lớn hơn 0 |
 
-## A6. Chi tiết endpoint — GET /api/parts/{part_id}/transactions/summary
+## A6. GET /api/parts/{part_id}/transactions/summary
 
-Tổng hợp nhập–xuất theo khoảng thời gian · US8 · liên quan UC5 (mở rộng)
+Tổng hợp nhập–xuất theo khoảng thời gian (US8, UC5 (mở rộng)).
 
 **RESPONSE 200 OK**
 ```json
@@ -139,7 +139,7 @@ Tổng hợp nhập–xuất theo khoảng thời gian · US8 · liên quan UC5 
 }
 ```
 
-**RESPONSE 403 Forbidden** — `center_id` không khớp trung tâm của người dùng đăng nhập (QT-14)
+**RESPONSE 403 Forbidden**: `center_id` không khớp trung tâm của người dùng đăng nhập (QT-14)  
 
 ### Bảng validation
 
@@ -151,5 +151,5 @@ Tổng hợp nhập–xuất theo khoảng thời gian · US8 · liên quan UC5 
 
 - [x] Mỗi endpoint nối được về ít nhất một User Story trong bảng truy vết.
 - [x] Endpoint MUST (xuất linh kiện) có đủ 1 response thành công + nhiều response lỗi.
-- [x] Mọi trường trong request body tồn tại trong mô hình dữ liệu (ERD — làm ở buổi 5).
+- [x] Mọi trường trong request body tồn tại trong mô hình dữ liệu (ERD).
 - [x] Quy tắc QT-09, QT-14 đã xuất hiện trong bảng validation / mã lỗi.
