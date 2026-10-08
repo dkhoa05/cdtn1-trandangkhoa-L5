@@ -7,28 +7,28 @@
         <mxCell id="boundary" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=14;fillColor=none;strokeColor=#000000;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Hệ thống: Quản lý kho linh kiện thay thế (L5)" vertex="1">
           <mxGeometry height="680" width="610" x="260" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="uc1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC1: Tra cuu ton kho&#xa;linh kien" vertex="1">
+        <mxCell id="uc1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC1: Tra cứu tồn kho&#xa;linh kiện" vertex="1">
           <mxGeometry height="60" width="220" x="310" y="100" as="geometry" />
         </mxCell>
-        <mxCell id="uc2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#7EA6E0;" value="UC2: Xuat linh kien&#xa;cho phieu bao hanh" vertex="1">
+        <mxCell id="uc2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC2: Xuất linh kiện&#xa;cho phiếu bảo hành" vertex="1">
           <mxGeometry height="60" width="220" x="310" y="215" as="geometry" />
         </mxCell>
-        <mxCell id="uc3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC3: Nhap kho&#xa;linh kien" vertex="1">
+        <mxCell id="uc3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC3: Nhập kho&#xa;linh kiện" vertex="1">
           <mxGeometry height="60" width="220" x="320" y="350" as="geometry" />
         </mxCell>
-        <mxCell id="uc4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC4: Xem danh sach&#xa;linh kien duoi nguong" vertex="1">
+        <mxCell id="uc4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC4: Xem danh sách linh kiện&#xa;dưới ngưỡng cảnh báo" vertex="1">
           <mxGeometry height="60" width="220" x="320" y="480" as="geometry" />
         </mxCell>
-        <mxCell id="uc5" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC5: Xem lich su&#xa;nhap - xuat linh kien" vertex="1">
+        <mxCell id="uc5" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC5: Xem lịch sử&#xa;nhập–xuất linh kiện" vertex="1">
           <mxGeometry height="60" width="220" x="320" y="610" as="geometry" />
         </mxCell>
-        <mxCell id="uc6" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#7EA6E0;" value="UC6: Kiểm tra ngưỡng tồn kho" vertex="1">
+        <mxCell id="uc6" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC6: Kiểm tra ngưỡng tồn kho" vertex="1">
           <mxGeometry height="60" width="200" x="610" y="275" as="geometry" />
         </mxCell>
-        <mxCell id="actor_ktv" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;html=1;outlineConnect=0;" value="Ky thuat vien" vertex="1">
+        <mxCell id="actor_ktv" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;html=1;outlineConnect=0;" value="Kỹ thuật viên" vertex="1">
           <mxGeometry height="60" width="30" x="100" y="170" as="geometry" />
         </mxCell>
-        <mxCell id="actor_qltt" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;html=1;outlineConnect=0;" value="Quan ly trung tam" vertex="1">
+        <mxCell id="actor_qltt" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;html=1;outlineConnect=0;" value="Quản lý trung tâm" vertex="1">
           <mxGeometry height="60" width="30" x="100" y="510" as="geometry" />
         </mxCell>
         <mxCell id="e1" edge="1" parent="1" source="actor_ktv" style="edgeStyle=none;html=1;endArrow=none;" target="uc1">
@@ -49,10 +49,8 @@
         <mxCell id="ext1" edge="1" parent="1" source="uc2" style="endArrow=open;html=1;dashed=1;endFill=0;fontStyle=2;" target="uc6" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="legend" parent="1" style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontColor=#666666;spacing=4;" value="&lt;b&gt;Chu thich&lt;/b&gt;&lt;ul style=&quot;margin:4px 0 0 16px;padding:0;&quot;&gt;&lt;li&gt;Hinh nguoi: &lt;b&gt;Actor&lt;/b&gt; (nguoi/he thong ngoai dung chuc nang)&lt;/li&gt;&lt;li&gt;Hinh oval: &lt;b&gt;Use Case&lt;/b&gt; (Dong tu + Doi tuong)&lt;/li&gt;&lt;li&gt;Duong lien net: Actor thuc hien Use Case&lt;/li&gt;&lt;li&gt;&lt;b&gt;&amp;lt;&amp;lt;include&amp;gt;&amp;gt;&lt;/b&gt;: UC nguon LUON goi UC dich&lt;/li&gt;&lt;li&gt;&lt;b&gt;&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;&lt;/b&gt;: UC mo rong CHI xay ra khi co dieu kien&lt;/li&gt;&lt;/ul&gt;" vertex="1">
-          <mxGeometry height="140" width="420" x="20" y="730" as="geometry" />
-        </mxCell>
-        <mxCell id="91e98a1eWV6S1pE-nge9-7" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC7: Sinh cảnh báo&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;tồn kho thấp&lt;/span&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="legend" parent="1" style="rounded=0;html=1;whiteSpace=wrap;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;fillColor=#ffffff;strokeColor=#999999;" value="&lt;b&gt;Chú thích&lt;/b&gt;&lt;br&gt;Hình người = Actor · hình oval = use case (động từ + đối tượng)&lt;br&gt;Khung chữ nhật = ranh giới hệ thống · đường liền = actor thực hiện use case&lt;br&gt;Nét đứt &amp;lt;&amp;lt;include&amp;gt;&amp;gt; = use case nguồn LUÔN gọi use case đích&lt;br&gt;Nét đứt &amp;lt;&amp;lt;extend&amp;gt;&amp;gt; = use case mở rộng CHỈ chạy khi đúng [điều kiện]" vertex="1"><mxGeometry height="90" width="610" x="260" y="735" as="geometry" /></mxCell>
+        <mxCell id="91e98a1eWV6S1pE-nge9-7" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="UC7: Sinh cảnh báo&#xa;tồn kho thấp" vertex="1">
           <mxGeometry height="60" width="220" x="590" y="440" as="geometry" />
         </mxCell>
         <mxCell id="91e98a1eWV6S1pE-nge9-8" edge="1" parent="1" source="91e98a1eWV6S1pE-nge9-7" style="endArrow=open;html=1;dashed=1;endFill=0;fontStyle=2;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="uc6" value="&amp;lt;&amp;lt;extend&amp;gt;&amp;gt;">
@@ -61,7 +59,7 @@
             <mxPoint x="749" y="405" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="91e98a1eWV6S1pE-nge9-9" parent="1" style="text;whiteSpace=wrap;html=1;" value="&lt;pre dir=&quot;ltr&quot;&gt;&lt;code&gt;[Tồn kho &amp;lt; ngưỡng tối thiểu]&lt;/code&gt;&lt;/pre&gt;" vertex="1">
+        <mxCell id="91e98a1eWV6S1pE-nge9-9" parent="1" style="text;whiteSpace=wrap;html=1;fontSize=11;fontStyle=2;fontColor=#666666;" value="[tồn kho &amp;lt; ngưỡng cảnh báo]" vertex="1">
           <mxGeometry height="30" width="190" x="620" y="383" as="geometry" />
         </mxCell>
       </root>
