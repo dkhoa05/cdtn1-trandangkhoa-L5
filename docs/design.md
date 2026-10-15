@@ -30,7 +30,7 @@ ERD vẽ ở docs/erd.drawio theo ký pháp chân chim, câu lệnh tạo bảng
 | service_center | QT-14, NFR3 (giới hạn theo trung tâm) | service_centers.csv (6 dòng) |
 | part | FR1 | parts.csv (180 dòng) |
 | part_stock | FR1, FR3, FR4, FR6 | part_stock.csv (717 dòng) |
-| part_transaction | FR2, FR5, FR7, FR8 | part_transactions.csv (4.954 dòng) |
+| part_transaction | FR2, FR5, FR7 | part_transactions.csv (4.954 dòng) |
 | ticket | FR2 (phiếu phải đang xử lý), bảng tham chiếu từ luồng L2 | tickets_history.csv |
 | app_user | NFR3, biết ai thực hiện giao dịch | tạo từ technicians.csv |
 
@@ -39,8 +39,38 @@ Có 6 bảng, 7 khóa ngoại, không bảng nào đứng riêng lẻ. Khóa ch�
 | Index | Dùng cho |
 |---|---|
 | PK part_stock(center_id, part_id) | NFR1, tra cứu tồn kho theo trung tâm |
-| idx_txn_part_time(center_id, part_id, created_at) | FR7, FR8, xem lịch sử và cộng tổng theo thời gian |
+| idx_txn_part_time(center_id, part_id, created_at) | FR7, xem lịch sử và cộng tổng theo thời gian |
 | idx_txn_ticket(ticket_id) | AC2.2, xem linh kiện đã dùng cho một phiếu |
+
+DDL của hai bảng chính, trích từ db/schema.sql:
+
+```sql
+CREATE TABLE part_stock (
+    center_id      INT    NOT NULL REFERENCES service_center(center_id),
+    part_id        BIGINT NOT NULL REFERENCES part(part_id),
+    quantity       INT    NOT NULL CHECK (quantity >= 0),       -- QT-09
+    min_threshold  INT    NOT NULL CHECK (min_threshold >= 0),
+    PRIMARY KEY (center_id, part_id)                            -- NFR1
+);
+
+CREATE TABLE part_transaction (
+    transaction_id  BIGSERIAL   PRIMARY KEY,
+    center_id       INT         NOT NULL,
+    part_id         BIGINT      NOT NULL,
+    txn_type        VARCHAR(4)  NOT NULL CHECK (txn_type IN ('NHAP', 'XUAT')),
+    quantity        INT         NOT NULL CHECK (quantity > 0),
+    ticket_id       BIGINT      REFERENCES ticket(ticket_id),
+    created_by      BIGINT      NOT NULL REFERENCES app_user(user_id),
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    FOREIGN KEY (center_id, part_id) REFERENCES part_stock(center_id, part_id),
+    CONSTRAINT chk_ticket_by_type CHECK (
+        (txn_type = 'XUAT' AND ticket_id IS NOT NULL) OR
+        (txn_type = 'NHAP' AND ticket_id IS NULL))
+);
+
+CREATE INDEX idx_txn_part_time ON part_transaction(center_id, part_id, created_at); -- FR7
+CREATE INDEX idx_txn_ticket    ON part_transaction(ticket_id);                       -- AC2.2
+```
 
 Một số điểm tôi cân nhắc khi thiết kế dữ liệu:
 - Không làm bảng cảnh báo riêng. Cảnh báo dưới ngưỡng (FR4, FR6) tính luôn từ quantity < min_threshold, vì lưu thêm một chỗ thì dễ bị lệch với số tồn thật.
@@ -83,4 +113,4 @@ Wireframe vẽ ở docs/wireframe.drawio, ảnh xuất ra là docs/wireframe.png
 | Lỗi "Số lượng nhập phải lớn hơn 0" | CHECK quantity > 0 | FR5 |
 | Thời điểm, loại, số lượng, phiếu | part_transaction.created_at, txn_type, quantity, ticket_id | FR7, US7 |
 | Người thực hiện | app_user.full_name (qua created_by) | FR7 |
-| Tổng nhập / tổng xuất | SUM(quantity) theo txn_type | FR8, US8 |
+| Tổng nhập / tổng xuất | SUM(quantity) theo txn_type | FR7, US7 |

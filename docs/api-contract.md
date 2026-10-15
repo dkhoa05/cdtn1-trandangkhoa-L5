@@ -9,7 +9,7 @@
 | POST | `/api/parts/{part_id}/stock-in` | Ghi nhận nhập kho linh kiện | US5 |
 | GET | `/api/parts/low-stock?center_id={id}` | Danh sách linh kiện đang dưới ngưỡng cảnh báo | US6 |
 | GET | `/api/parts/{part_id}/transactions?center_id={id}` | Lịch sử chi tiết từng giao dịch nhập–xuất của một linh kiện | US7 |
-| GET | `/api/parts/{part_id}/transactions/summary?center_id={id}&from={date}&to={date}` | Tổng hợp số lượng nhập/xuất của linh kiện trong khoảng thời gian | US8 |
+| GET | `/api/parts/{part_id}/transactions/summary?center_id={id}&from={date}&to={date}` | Tổng nhập, tổng xuất của linh kiện trong khoảng thời gian | US7 |
 
 ## A2. Quy ước chung
 
@@ -124,7 +124,7 @@ Nhập kho linh kiện (US5, UC3).
 
 ## A6. GET /api/parts/{part_id}/transactions/summary
 
-Tổng hợp nhập–xuất theo khoảng thời gian (US8, UC5 (mở rộng)).
+Tổng hợp nhập–xuất theo khoảng thời gian (US7, UC5).
 
 **RESPONSE 200 OK**
 ```json

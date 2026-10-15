@@ -59,5 +59,5 @@ CREATE TABLE part_transaction (
         (txn_type = 'NHAP' AND ticket_id IS NULL))
 );
 
-CREATE INDEX idx_txn_part_time ON part_transaction(center_id, part_id, created_at); -- FR7, FR8
+CREATE INDEX idx_txn_part_time ON part_transaction(center_id, part_id, created_at); -- FR7
 CREATE INDEX idx_txn_ticket    ON part_transaction(ticket_id);                       -- AC2.2

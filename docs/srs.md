@@ -49,8 +49,7 @@ dưới ngưỡng, và quản lý trung tâm ghi nhận nhập kho.
 | FR4 | Hệ thống cảnh báo khi tồn kho một linh kiện xuống dưới ngưỡng cảnh báo | US4 | SHOULD |
 | FR5 | Hệ thống cho phép ghi nhận nhập kho linh kiện mới | US5 | SHOULD |
 | FR6 | Hệ thống hiển thị danh sách linh kiện đang dưới ngưỡng cảnh báo theo trung tâm | US6 | SHOULD |
-| FR7 | Hệ thống hiển thị lịch sử chi tiết từng giao dịch nhập–xuất của một linh kiện theo thời gian | US7 | COULD |
-| FR8 | Hệ thống hiển thị số liệu tổng hợp (tổng nhập, tổng xuất cộng dồn) của linh kiện theo khoảng thời gian | US8 | COULD |
+| FR7 | Hệ thống hiển thị lịch sử từng giao dịch nhập–xuất của một linh kiện và tổng nhập, tổng xuất trong khoảng thời gian chọn | US7 | COULD |
 
 ### User Story chi tiết
 
@@ -85,18 +84,15 @@ lượng tồn chính xác.
 **US6 (SHOULD)** Là quản lý trung tâm, tôi muốn xem danh sách linh kiện đang dưới ngưỡng cảnh
 báo của trung tâm mình để biết cần đặt hàng gì.
 
-**US7 (COULD)** Là quản lý trung tâm, tôi muốn xem lịch sử chi tiết từng giao dịch nhập–xuất
-của một linh kiện để đối chiếu khi có sai lệch.
-
-**US8 (COULD)** Là quản lý trung tâm, tôi muốn xem tổng số lượng nhập và xuất của từng linh
-kiện trong một khoảng thời gian để phục vụ đối chiếu tồn kho tổng hợp.
+**US7 (COULD)** Là quản lý trung tâm, tôi muốn xem lịch sử từng giao dịch nhập–xuất của một
+linh kiện kèm tổng nhập, tổng xuất trong khoảng thời gian chọn để đối chiếu khi tồn kho có sai lệch.
 
 ## 4. Yêu cầu phi chức năng
 
 | Mã | Loại | Yêu cầu phi chức năng | Ngưỡng đo được |
 |---|---|---|---|
 | NFR1 | Hiệu năng | Tra cứu tồn kho linh kiện của một trung tâm phải trả về kết quả nhanh | Dưới 1 giây với danh sách ≤200 linh kiện/trung tâm, trên máy 8 GB RAM |
-| NFR2 | Tin cậy | Giao dịch xuất/nhập linh kiện không được để lại trạng thái nửa vời khi lỗi | Mỗi giao dịch xuất/nhập được ghi theo transaction: hoặc cả (giảm/tăng tồn kho + ghi log giao dịch) cùng thành công, hoặc không cái nào được lưu |
+| NFR2 | Tin cậy | Giao dịch xuất/nhập linh kiện không được để lại trạng thái nửa vời khi lỗi | 0 giao dịch để tồn kho lệch với log giao dịch trong 1.000 lần thử ngắt lỗi giữa chừng (giảm/tăng tồn và ghi log chạy trong cùng một transaction) |
 | NFR3 | Bảo mật | Dữ liệu tồn kho chỉ hiển thị cho đúng trung tâm của người dùng (QT-14) | 100% request tra cứu/xuất/nhập bị chặn nếu center_id của linh kiện khác center_id của người dùng đăng nhập, trả về 403 |
 
 
@@ -118,8 +114,7 @@ kiện trong một khoảng thời gian để phục vụ đối chiếu tồn k
 | FR4 | Cảnh báo dưới ngưỡng | US4 | UC7 | SHOULD | part_stock (tính quantity < min_threshold) | M2 (cảnh báo 7a) | Bổ sung ở BT3 |
 | FR5 | Nhập kho linh kiện | US5 | UC3 | SHOULD | part_transaction, part_stock | M3 | Bổ sung ở BT3 |
 | FR6 | Danh sách dưới ngưỡng | US6 | UC4 | SHOULD | part_stock | M1 (lọc dưới ngưỡng) | Bổ sung ở BT3 |
-| FR7 | Lịch sử chi tiết nhập–xuất | US7 | UC5 | COULD | part_transaction, app_user | M3 | Bổ sung ở BT3 |
-| FR8 | Tổng hợp nhập–xuất theo khoảng thời gian | US8 | UC5 (mở rộng) | COULD | part_transaction (tính SUM) | M3 | Bổ sung ở BT3 |
+| FR7 | Lịch sử và tổng hợp nhập–xuất | US7 | UC5 | COULD | part_transaction, app_user (tính SUM) | M3 | Bổ sung ở BT3 |
 
 
 ## Use Case Diagram

@@ -139,7 +139,7 @@
         <mxCell id="v43" parent="1" style="html=1;whiteSpace=wrap;rounded=0;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;fillColor=#ffffff;strokeColor=#999999;" value="&lt;b&gt;Chú thích&lt;/b&gt; (ký pháp chân chim)&lt;br&gt;—|| đúng một · —o| không hoặc một · —o&amp;lt; không hoặc nhiều&lt;br&gt;PK khóa chính (gạch chân) · FK khóa ngoại · chữ xám = kiểu dữ liệu&lt;br&gt;Khung nét đứt = bảng tham chiếu từ luồng khác (L2)" vertex="1">
           <mxGeometry height="110" width="470" x="40" y="500" as="geometry" />
         </mxCell>
-        <mxCell id="v44" parent="1" style="html=1;whiteSpace=wrap;rounded=0;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;fillColor=#ffffff;strokeColor=#999999;" value="&lt;b&gt;Index&lt;/b&gt;&lt;br&gt;PK (center_id, part_id) của part_stock → NFR1&lt;br&gt;idx_txn_part_time (center_id, part_id, created_at) → FR7, FR8&lt;br&gt;idx_txn_ticket (ticket_id) → AC2.2&lt;br&gt;Cảnh báo dưới ngưỡng tính từ quantity &amp;lt; min_threshold, không lưu bảng riêng" vertex="1">
+        <mxCell id="v44" parent="1" style="html=1;whiteSpace=wrap;rounded=0;align=left;verticalAlign=top;spacingLeft=8;fontSize=11;fillColor=#ffffff;strokeColor=#999999;" value="&lt;b&gt;Index&lt;/b&gt;&lt;br&gt;PK (center_id, part_id) của part_stock → NFR1&lt;br&gt;idx_txn_part_time (center_id, part_id, created_at) → FR7&lt;br&gt;idx_txn_ticket (ticket_id) → AC2.2&lt;br&gt;Cảnh báo dưới ngưỡng tính từ quantity &amp;lt; min_threshold, không lưu bảng riêng" vertex="1">
           <mxGeometry height="110" width="460" x="530" y="500" as="geometry" />
         </mxCell>
       </root>
