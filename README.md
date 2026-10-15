@@ -15,9 +15,9 @@ cảnh báo khi tồn dưới ngưỡng, và ghi nhận nhập kho. Mục tiêu 
 phiếu rồi mới biết hết linh kiện, phải hẹn lại khách).
 
 ## 2. Yêu cầu môi trường
-Python 3.11+
-PostgreSQL 16
-Biến môi trường: xem .env.example
+- Python 3.10 trở lên
+- PostgreSQL 16 trở lên (đã chạy thử trên PostgreSQL 18)
+- Biến môi trường: xem .env.example
 
 Track SE gợi ý Node/Express hoặc Spring Boot, nhưng tôi chọn Python/Flask vì đã quen Python,
 đỡ mất thời gian học ngôn ngữ mới mà tập trung được vào nghiệp vụ.
@@ -29,17 +29,23 @@ Track SE gợi ý Node/Express hoặc Spring Boot, nhưng tôi chọn Python/Fla
 4. flask run → mở http://localhost:5000/health
 
 ## 4. Cấu trúc thư mục
-- docs/, tài liệu kỹ thuật (SRS, ERD, kiến trúc, khai báo AI)
-- src/api/, route/endpoint Flask
-- src/service/, business logic (kiểm tra tồn kho, sinh cảnh báo)
-- src/repository/, truy vấn PostgreSQL
-- tests/, unit test và integration test
-- data/sample/, mẫu nhỏ từ parts.csv/part_stock.csv/part_transactions.csv (không commit dữ liệu gốc)
+- docs/: tài liệu (SRS, thiết kế, sơ đồ, nhật ký thay đổi thiết kế, khai báo AI)
+- src/routes/: nhận request HTTP, đổi lỗi nghiệp vụ thành mã HTTP
+- src/services/: quy tắc nghiệp vụ, không chứa gì về HTTP
+- src/repositories/: đọc ghi PostgreSQL, không chứa quy tắc nghiệp vụ
+- src/validators/: kiểm tra định dạng dữ liệu vào
+- migrations/: tạo bảng từ cơ sở dữ liệu trống
+- seeds/: dữ liệu mẫu rút từ bộ dữ liệu của case study
+- tests/: bộ kiểm thử
 
 ## 5. Kiểm thử
 pytest → hiển thị số test PASS
 
-## 6. Trạng thái hiện tại
-[ ] Khởi tạo project, smoke test chạy được (buổi 2)
-[ ] Module xem/xuất tồn kho (buổi 8–10)
-[ ] Module cảnh báo & nhập kho (buổi 10–12)
+## 6. Trạng thái hiện tại (buổi 8)
+- [x] Điều chỉnh thiết kế theo phản hồi BT1 (docs/thay-doi-thiet-ke.md)
+- [ ] Khung src/ theo sơ đồ kiến trúc
+- [ ] Migration và dữ liệu mẫu
+- [ ] CRUD linh kiện và tồn kho qua 3 lớp
+- [ ] Xuất, nhập kho với quy tắc QT-09, QT-14
+- [ ] Ba kiểm thử thuộc ba loại
+- [ ] Màn hình M1, M2, M3
