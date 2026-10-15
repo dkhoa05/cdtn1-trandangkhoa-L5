@@ -43,7 +43,7 @@ pytest → hiển thị số test PASS
 
 ## 6. Trạng thái hiện tại (buổi 8)
 - [x] Điều chỉnh thiết kế theo phản hồi BT1 (docs/thay-doi-thiet-ke.md)
-- [ ] Khung src/ theo sơ đồ kiến trúc
+- [x] Khung src/ theo sơ đồ kiến trúc, requirements.txt khóa phiên bản, /health
 - [ ] Migration và dữ liệu mẫu
 - [ ] CRUD linh kiện và tồn kho qua 3 lớp
 - [ ] Xuất, nhập kho với quy tắc QT-09, QT-14
