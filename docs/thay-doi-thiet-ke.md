@@ -40,3 +40,17 @@ Mọi sai lệch so với thiết kế Bài tập 1 được ghi lại ở đây
 - Quyết định: SỬA theo quy ước của đề.
 - Lý do: cùng bốn lớp như sơ đồ kiến trúc BT1, chỉ đổi tên để giảng viên kiểm ranh giới lớp đúng chỗ. Lớp kiểm tra định dạng dữ liệu vào được tách riêng ra src/validators thay vì nằm trong route.
 - Ảnh hưởng: README.md mục 4; cấu trúc src/; sơ đồ kiến trúc thực tế của BT2.
+
+### TD-06. Chuyển db/schema.sql thành migration chạy lại được
+
+- Lý do phát sinh: đề BT2 yêu cầu thư mục migrations/ dựng được CSDL từ trạng thái trống và chạy lại lần hai không lỗi.
+- Quyết định: SỬA, chuyển db/schema.sql thành migrations/001_init.sql và thêm IF NOT EXISTS cho mọi CREATE TABLE, CREATE INDEX. Nội dung bảng, khóa và ràng buộc giữ nguyên như BT1.
+- Lý do: chạy migration lần hai trên CSDL đã có bảng sẽ báo lỗi "relation already exists" nếu không có IF NOT EXISTS.
+- Ảnh hưởng: migrations/001_init.sql; đường dẫn trong design.md và ai-disclosure.md.
+
+### TD-07. Dữ liệu mẫu cho app_user và ticket
+
+- Lý do phát sinh: bộ dữ liệu case study không có bảng người dùng hệ thống và không có quản lý trung tâm; bảng phiếu bảo hành có 7.800 dòng, phần lớn đã đóng.
+- Quyết định: kỹ thuật viên lấy từ technicians.csv (giữ nguyên mã), mỗi trung tâm thêm một tài khoản quản lý; bảng ticket chỉ nạp các phiếu đang xử lý và các phiếu có giao dịch xuất từ 01/07/2026; giao dịch kho chỉ nạp từ 01/07/2026.
+- Lý do: đủ dữ liệu để ba màn hình có nội dung mà tệp seed vẫn nhỏ, đọc được.
+- Ảnh hưởng: seeds/001_demo.sql, seeds/gen_seed.py.

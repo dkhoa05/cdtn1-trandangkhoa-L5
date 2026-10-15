@@ -1,14 +1,15 @@
--- SQL DDL skeleton — Luồng L5: Kho linh kiện thay thế (PostgreSQL)
+-- Migration 001: tạo bảng luồng L5 Kho linh kiện thay thế (PostgreSQL 16+).
 -- Tên bảng/cột khớp bảng thuật ngữ mục 1 của docs/srs.md và dataset case study.
+-- Dùng IF NOT EXISTS để chạy lại lần hai không lỗi.
 
-CREATE TABLE service_center (
+CREATE TABLE IF NOT EXISTS service_center (
     center_id    SERIAL       PRIMARY KEY,
     center_code  VARCHAR(10)  NOT NULL UNIQUE,
     center_name  VARCHAR(120) NOT NULL,
     city         VARCHAR(60)  NOT NULL
 );
 
-CREATE TABLE app_user (
+CREATE TABLE IF NOT EXISTS app_user (
     user_id    BIGSERIAL    PRIMARY KEY,
     full_name  VARCHAR(120) NOT NULL,
     role       VARCHAR(20)  NOT NULL
@@ -17,7 +18,7 @@ CREATE TABLE app_user (
     is_active  BOOLEAN      NOT NULL DEFAULT true                         -- QT-13
 );
 
-CREATE TABLE part (
+CREATE TABLE IF NOT EXISTS part (
     part_id     BIGSERIAL     PRIMARY KEY,
     part_code   VARCHAR(30)   NOT NULL UNIQUE,
     part_name   VARCHAR(120)  NOT NULL,
@@ -26,7 +27,7 @@ CREATE TABLE part (
 
 -- Tồn kho theo trung tâm. Cảnh báo dưới ngưỡng (FR4, FR6) TÍNH từ quantity < min_threshold,
 -- không lưu bảng cảnh báo riêng để tránh lưu giá trị tính được.
-CREATE TABLE part_stock (
+CREATE TABLE IF NOT EXISTS part_stock (
     center_id      INT    NOT NULL REFERENCES service_center(center_id),
     part_id        BIGINT NOT NULL REFERENCES part(part_id),
     quantity       INT    NOT NULL CHECK (quantity >= 0),       -- QT-09: không xuất quá tồn
@@ -34,8 +35,8 @@ CREATE TABLE part_stock (
     PRIMARY KEY (center_id, part_id)                            -- NFR1: tra cứu theo trung tâm
 );
 
--- Bảng tham chiếu từ luồng L2 — chỉ giữ các cột luồng L5 cần dùng.
-CREATE TABLE ticket (
+-- Bảng tham chiếu từ luồng L2, chỉ giữ các cột luồng L5 cần dùng.
+CREATE TABLE IF NOT EXISTS ticket (
     ticket_id    BIGSERIAL   PRIMARY KEY,
     ticket_code  VARCHAR(20) NOT NULL UNIQUE,
     center_id    INT         NOT NULL REFERENCES service_center(center_id),
@@ -43,7 +44,7 @@ CREATE TABLE ticket (
 );
 
 -- Lịch sử nhập–xuất: chỉ thêm, không sửa/xóa (QT-13). Sai thì ghi giao dịch bù.
-CREATE TABLE part_transaction (
+CREATE TABLE IF NOT EXISTS part_transaction (
     transaction_id  BIGSERIAL   PRIMARY KEY,
     center_id       INT         NOT NULL,
     part_id         BIGINT      NOT NULL,
@@ -59,5 +60,5 @@ CREATE TABLE part_transaction (
         (txn_type = 'NHAP' AND ticket_id IS NULL))
 );
 
-CREATE INDEX idx_txn_part_time ON part_transaction(center_id, part_id, created_at); -- FR7
-CREATE INDEX idx_txn_ticket    ON part_transaction(ticket_id);                       -- AC2.2
+CREATE INDEX IF NOT EXISTS idx_txn_part_time ON part_transaction(center_id, part_id, created_at); -- FR7
+CREATE INDEX IF NOT EXISTS idx_txn_ticket    ON part_transaction(ticket_id);                       -- AC2.2

@@ -4,7 +4,7 @@
 |---|---|---|---|
 | Claude Code | Gợi ý ý tưởng, bố cục và làm bản nháp đầu cho SRS, User Story, đặc tả use case | `docs/srs.md` | Tôi đối chiếu lại với case study, sửa theo ý mình, tự chốt danh sách User Story và mức MoSCoW |
 | Claude Code | Gợi ý cách vẽ và làm bản nháp đầu các sơ đồ use case, kiến trúc, ERD, wireframe | `docs/*.drawio`, `docs/wireframe.png` | Tôi mở bằng draw.io vẽ bổ sung, chỉnh sửa theo mong muốn; so ERD với dữ liệu mẫu, so từng trường wireframe với cột ERD |
-| Claude Code | Gợi ý và làm bản nháp đầu DDL, API contract, bảng ánh xạ trong tài liệu thiết kế | `db/schema.sql`, `docs/api-contract.md`, `docs/design.md` | Tôi đối soát với ERD, bảng truy vết và 5 lỗi ERD buổi 5, sửa lại theo ý mình |
+| Claude Code | Gợi ý và làm bản nháp đầu DDL, API contract, bảng ánh xạ trong tài liệu thiết kế | `migrations/001_init.sql`, `docs/api-contract.md`, `docs/design.md` | Tôi đối soát với ERD, bảng truy vết và 5 lỗi ERD buổi 5, sửa lại theo ý mình |
 | Claude Code | Góp ý 3 câu lập luận của tôi (sai khuôn, lệch mã NFR, thiếu đánh đổi), không viết thay | `docs/design.md` mục 3.2 | Tôi tự sửa lại theo khuôn của đề |
 | Claude (claude.ai) | Hỗ trợ diễn đạt 3 câu lập luận; ý quyết định và đánh đổi do tôi tự nghĩ từ NFR1–NFR3 | `docs/design.md` mục 3.2 | So từng câu với NFR trong SRS và sơ đồ kiến trúc; tự giải thích được từng câu |
 | Claude Code | Góp ý và hỗ trợ sửa bài theo nhận xét chấm BT1: gộp US7 với US8, thêm ngưỡng cho NFR2, trích DDL | `docs/srs.md`, `docs/design.md`, `docs/api-contract.md` | Tôi tự chọn hướng sửa, sau đó kiểm tra lại với nhận xét của thầy và bảng truy vết |

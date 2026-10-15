@@ -9,7 +9,7 @@ Sơ đồ nằm ở docs/architecture.drawio. Tôi chia hệ thống thành 4 l�
 | 1. Trình bày | Flask routes + templates (M1, M2, M3) | Nhận form, kiểm tra trường rỗng, đổi lỗi nghiệp vụ thành mã HTTP | HTTP + JSON theo api-contract.md |
 | 2. Nghiệp vụ | StockService, IssueService, ReceiptService | Chứa các quy tắc QT-09, QT-13, QT-14 và kiểm tra ngưỡng sau khi xuất (UC6, UC7) | Gọi hàm của Repository |
 | 3. Truy cập dữ liệu | PartRepository, StockRepository, TransactionRepository, TicketRepository, UserRepository | Chỉ đọc/ghi dữ liệu, không chứa quy tắc | SQL |
-| 4. Lưu trữ | PostgreSQL (db/schema.sql) | Giữ ràng buộc ở mức CSDL: khóa ngoại, NOT NULL, CHECK | Không có |
+| 4. Lưu trữ | PostgreSQL (migrations/001_init.sql) | Giữ ràng buộc ở mức CSDL: khóa ngoại, NOT NULL, CHECK | Không có |
 
 Những phần không làm (WON'T): dự báo nhu cầu linh kiện, tự đặt hàng với nhà cung cấp, gửi SMS/email cảnh báo, quản lý giá nhập theo thời gian.
 
@@ -23,7 +23,7 @@ Những phần không làm (WON'T): dự báo nhu cầu linh kiện, tự đặt
 
 ## 4. Mô hình dữ liệu (Track SE)
 
-ERD vẽ ở docs/erd.drawio theo ký pháp chân chim, câu lệnh tạo bảng để ở db/schema.sql (PostgreSQL).
+ERD vẽ ở docs/erd.drawio theo ký pháp chân chim, câu lệnh tạo bảng để ở migrations/001_init.sql (PostgreSQL).
 
 | Bảng | Phục vụ yêu cầu | Lấy dữ liệu mẫu từ |
 |---|---|---|
@@ -42,7 +42,7 @@ Có 6 bảng, 7 khóa ngoại, không bảng nào đứng riêng lẻ. Khóa ch�
 | idx_txn_part_time(center_id, part_id, created_at) | FR7, xem lịch sử và cộng tổng theo thời gian |
 | idx_txn_ticket(ticket_id) | AC2.2, xem linh kiện đã dùng cho một phiếu |
 
-DDL của hai bảng chính, trích từ db/schema.sql:
+DDL của hai bảng chính, trích từ migrations/001_init.sql:
 
 ```sql
 CREATE TABLE part_stock (
