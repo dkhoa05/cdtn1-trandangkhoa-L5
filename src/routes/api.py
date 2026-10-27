@@ -1,0 +1,150 @@
+"""Tầng 1: nhận HTTP, gọi service, đổi mã lỗi nghiệp vụ thành mã HTTP.
+
+Không có quy tắc nghiệp vụ ở đây; bảng HTTP_BY_CODE là toàn bộ phần "biết về HTTP".
+"""
+from functools import wraps
+
+from flask import Blueprint, g, jsonify, request
+
+from src import auth
+from src.errors import AppError
+from src.validators import stock as v
+
+HTTP_BY_CODE = {
+    'VALIDATION_FAILED': 400,
+    'UNAUTHORIZED': 401,
+    'FORBIDDEN': 403,
+    'TICKET_NOT_FOUND': 404,
+    'PART_NOT_FOUND': 404,
+    'INSUFFICIENT_STOCK': 409,        # QT-09
+    'PART_CODE_EXISTS': 409,
+    'PART_HAS_STOCK': 409,
+    'STOCK_EXISTS': 409,
+    'STOCK_NOT_EMPTY': 409,
+    'TICKET_NOT_PROCESSING': 422,
+}
+
+
+def loi_json(e):
+    than = {'code': e.code, 'message': e.message}
+    if e.fields:
+        than['fields'] = e.fields
+    return jsonify(error=than), HTTP_BY_CODE.get(e.code, 400)
+
+
+def build_api(service):
+    bp = Blueprint('api', __name__, url_prefix='/api')
+
+    def can_dang_nhap(ham):
+        @wraps(ham)
+        def boc(*a, **kw):
+            tieu_de = request.headers.get('Authorization', '')
+            if not tieu_de.startswith('Bearer '):
+                raise AppError('UNAUTHORIZED', 'Thiếu thông tin đăng nhập')
+            g.user = service.lay_nguoi_dung(auth.doc_token(tieu_de[7:]))
+            return ham(*a, **kw)
+        return boc
+
+    @bp.post('/auth/login')
+    def dang_nhap():
+        user_id = v.dang_nhap(request.get_json(silent=True))['user_id']
+        user = service.lay_nguoi_dung(user_id)
+        return jsonify(token=auth.tao_token(user_id), user={
+            k: user[k] for k in ('user_id', 'full_name', 'role', 'center_id', 'center_name')})
+
+    @bp.get('/parts')
+    @can_dang_nhap
+    def tim_linh_kien():
+        page, size = v.phan_trang(request.args)
+        return jsonify(service.tim_linh_kien(
+            g.user, v.so_nguyen_tuy_chon(request.args, 'center_id'),
+            (request.args.get('q') or '').strip() or None, page, size))
+
+    @bp.get('/parts/low-stock')
+    @can_dang_nhap
+    def duoi_nguong():
+        page, size = v.phan_trang(request.args)
+        return jsonify(service.tim_linh_kien(
+            g.user, v.so_nguyen_tuy_chon(request.args, 'center_id'), None, page, size,
+            chi_duoi_nguong=True))
+
+    @bp.post('/parts')
+    @can_dang_nhap
+    def tao_linh_kien():
+        d = v.tao_linh_kien(request.get_json(silent=True))
+        part = service.tao_linh_kien(g.user, d['part_code'], d['part_name'], d['unit_price'])
+        return jsonify(part), 201
+
+    @bp.get('/parts/<int:part_id>')
+    @can_dang_nhap
+    def lay_linh_kien(part_id):
+        return jsonify(service.lay_linh_kien(g.user, part_id))
+
+    @bp.put('/parts/<int:part_id>')
+    @can_dang_nhap
+    def sua_linh_kien(part_id):
+        d = v.sua_linh_kien(request.get_json(silent=True))
+        return jsonify(service.sua_linh_kien(g.user, part_id, d['part_name'], d['unit_price']))
+
+    @bp.delete('/parts/<int:part_id>')
+    @can_dang_nhap
+    def ngung_linh_kien(part_id):
+        return jsonify(service.ngung_linh_kien(g.user, part_id))
+
+    @bp.post('/stock')
+    @can_dang_nhap
+    def them_vao_kho():
+        d = v.them_vao_kho(request.get_json(silent=True))
+        return jsonify(service.them_vao_kho(g.user, d['part_id'], d['min_threshold'])), 201
+
+    @bp.patch('/stock/<int:part_id>')
+    @can_dang_nhap
+    def doi_nguong(part_id):
+        d = v.doi_nguong(request.get_json(silent=True))
+        return jsonify(service.doi_nguong(g.user, part_id, d['min_threshold']))
+
+    @bp.delete('/stock/<int:part_id>')
+    @can_dang_nhap
+    def ngung_ton_kho(part_id):
+        return jsonify(service.ngung_ton_kho(g.user, part_id))
+
+    @bp.post('/parts/<int:part_id>/stock-in')
+    @can_dang_nhap
+    def nhap_kho(part_id):
+        d = v.nhap_kho(request.get_json(silent=True))
+        return jsonify(service.nhap_kho(g.user, part_id, d['center_id'], d['quantity'])), 201
+
+    @bp.get('/parts/<int:part_id>/transactions')
+    @can_dang_nhap
+    def lich_su(part_id):
+        page, size = v.phan_trang(request.args)
+        return jsonify(service.lich_su(
+            g.user, part_id, v.so_nguyen_tuy_chon(request.args, 'center_id'), page, size))
+
+    @bp.get('/parts/<int:part_id>/transactions/summary')
+    @can_dang_nhap
+    def tong_hop(part_id):
+        tu, den = v.khoang_ngay(request.args)
+        return jsonify(service.tong_hop(
+            g.user, part_id, v.so_nguyen_tuy_chon(request.args, 'center_id'), tu, den))
+
+    @bp.get('/tickets')
+    @can_dang_nhap
+    def ds_phieu():
+        page, size = v.phan_trang(request.args)
+        return jsonify(service.ds_phieu(
+            g.user, request.args.get('status') or None, page, size))
+
+    @bp.get('/tickets/<int:ticket_id>/parts')
+    @can_dang_nhap
+    def linh_kien_cua_phieu(ticket_id):
+        return jsonify(service.linh_kien_cua_phieu(g.user, ticket_id))
+
+    @bp.post('/tickets/<int:ticket_id>/parts')
+    @can_dang_nhap
+    def xuat_kho(ticket_id):
+        d = v.xuat_kho(request.get_json(silent=True))
+        return jsonify(service.xuat_linh_kien(
+            g.user, ticket_id, d['part_id'], d['quantity'])), 201
+
+    return bp
