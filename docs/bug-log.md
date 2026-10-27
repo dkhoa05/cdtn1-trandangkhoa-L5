@@ -36,7 +36,7 @@ Mỗi mục có bảy dòng theo mẫu của học phần. Link commit trỏ t�
 | 4. Cách tái lập | `curl -XPOST /api/parts` rồi `GET /api/parts/{id}` ở phiên bản đầu của `src/app.py` |
 | 5. Nguyên nhân | Cột `NUMERIC(12,0)` được psycopg trả về kiểu `Decimal`, bộ chuyển JSON mặc định của Flask quy mọi kiểu lạ về chuỗi |
 | 6. Cách sửa | Trong `create_app`, đổi `Decimal` nguyên về `int` (và số lẻ về `float`) khi tuần tự hóa JSON |
-| 7. Commit và xác nhận | Bản sửa nằm trong [563075f](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/563075f) (sửa trước lần commit đầu của module API). Chạy lại curl cho `"unit_price":120000` là số |
+| 7. Commit và xác nhận | Bản sửa nằm trong [563075f](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/563075f) (sửa trước lần commit đầu của module API). Chạy lại curl cho `"unit_price":120000` là số  Test hồi quy bổ sung sau đó ở [1c86910](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/1c86910) (`test_api_chi_tiet_linh_kien_gia_la_so_...`, PASS); không có bản "FAIL trước" vì lỗi đã được sửa trước lần commit đầu của module API. |
 
 ## BUG-004. Thông báo trạng thái rỗng dùng chung một câu
 
@@ -49,3 +49,15 @@ Mỗi mục có bảy dòng theo mẫu của học phần. Link commit trỏ t�
 | 5. Nguyên nhân | `DataState` nhận `noiDungRong` là chuỗi cố định, được tính một lần lúc khởi tạo khi bộ lọc còn rỗng |
 | 6. Cách sửa | Cho `noiDungRong` nhận một hàm, `DataState` gọi hàm mỗi lần hiển thị; ba màn hình truyền hàm dựa trên bộ lọc hiện tại |
 | 7. Commit và xác nhận | Bản sửa nằm trong [dfe551d](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/dfe551d) (`web/src/components/DataState.js`). Ảnh xác nhận: `docs/export/e2e-m1-trang-thai-rong.png` |
+
+## BUG-005. Lệnh bật môi trường ảo trong README chứa ký tự hỏng
+
+| Dòng | Nội dung |
+|---|---|
+| 1. Mã và mức độ | BUG-005, Major (một lệnh bắt buộc trong README sai, người chấm không dựng được môi trường theo C1) |
+| 2. Phát hiện bởi | Rà soát README theo checklist Buổi 12 ("mỗi bước một lệnh sao chép được"), kiểm bằng `cat -A` |
+| 3. Triệu chứng | Dòng bước 2 hiển thị `venv\Scriptsctivate`; sao chép lệnh ra terminal không bật được môi trường ảo |
+| 4. Cách tái lập | `git show v0.2:README.md \| grep -n Scripts \| cat -A` thấy ký tự `^G` (BEL) thay cho `\a` |
+| 5. Nguyên nhân | Script Python sinh README viết chuỗi `venv\Scripts\activate` trong chuỗi thường nên `\a` được hiểu là ký tự điều khiển BEL (mã 0x07) và được ghi nguyên vào tệp |
+| 6. Cách sửa | Thay ký tự BEL, viết lại lệnh bằng dấu gạch chéo ngược được thoát đúng, đồng thời rút mục 3 còn bốn bước; thêm `tests/test_tai_lieu.py` kiểm mọi tệp `.md` không có ký tự điều khiển ẩn |
+| 7. Commit và xác nhận | Sửa: [a9f5395](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/a9f5395). Test: [43fa513](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/43fa513). Chạy cùng phép kiểm trên README của tag v0.2 cũ báo `0x7`; trên bản mới PASS |
