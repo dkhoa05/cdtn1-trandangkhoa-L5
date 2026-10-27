@@ -4,7 +4,7 @@ Flask cũng phục vụ thư mục web/ (frontend JS thuần) cùng một origin
 nên trình duyệt không gặp lỗi CORS và chỉ cần một lệnh để chạy cả hệ thống.
 """
 import logging
-import os
+import time
 import uuid
 from datetime import datetime
 from decimal import Decimal
@@ -16,14 +16,13 @@ from werkzeug.exceptions import HTTPException
 
 from src import config, db
 from src.errors import AppError
+from src.log_config import cau_hinh_log
 from src.repositories.stock_repo import unit_of_work
 from src.routes.api import build_api, loi_json
 from src.services.stock_service import StockService
 
 WEB = Path(__file__).resolve().parent.parent / 'web'
-logging.basicConfig(
-    level=os.getenv('LOG_LEVEL', 'INFO'),
-    format='%(asctime)s %(levelname)s %(name)s %(message)s')
+cau_hinh_log()
 log = logging.getLogger('l5')
 
 
@@ -50,19 +49,32 @@ def create_app(service=None):
     app.register_blueprint(build_api(service or StockService(unit_of_work)))
 
     @app.before_request
-    def gan_request_id():
-        g.request_id = uuid.uuid4().hex[:8]
+    def bat_dau_request():
+        # Mã tương quan: dùng X-Request-Id của bên gọi nếu có, để lần theo một yêu cầu qua nhiều dòng log.
+        g.request_id = request.headers.get('X-Request-Id') or uuid.uuid4().hex[:8]
+        g.bat_dau = time.perf_counter()
+
+    @app.after_request
+    def ghi_log_request(res):
+        res.headers['X-Request-Id'] = g.get('request_id', '-')
+        log.info('yeu cau hoan tat', extra={'ngu_canh': {
+            'requestId': g.get('request_id'), 'phuong_thuc': request.method, 'duong_dan': request.path,
+            'ma_trang_thai': res.status_code,
+            'thoi_gian_ms': round((time.perf_counter() - g.get('bat_dau', time.perf_counter())) * 1000, 1)}})
+        return res
 
     @app.errorhandler(AppError)
     def loi_nghiep_vu(e):
         # Lỗi nghiệp vụ là việc bình thường, chỉ ghi INFO kèm mã lỗi và requestId, không kèm dữ liệu cá nhân.
-        log.info('vi pham quy tac code=%s requestId=%s', e.code, g.get('request_id'))
+        log.info('vi pham quy tac', extra={'ngu_canh': {
+            'requestId': g.get('request_id'), 'ma_loi': e.code,
+            'user_id': (g.get('user') or {}).get('user_id')}})
         return loi_json(e)
 
     @app.errorhandler(psycopg.OperationalError)
     def loi_mat_ket_noi_csdl(e):
         # Lỗi hạ tầng: ghi ERROR một lần ở đây (kèm ngăn xếp), người dùng chỉ nhận mã tra cứu.
-        log.exception('mat ket noi CSDL requestId=%s', g.get('request_id'))
+        log.exception('mat ket noi CSDL', extra={'ngu_canh': {'requestId': g.get('request_id')}})
         return jsonify(error={'code': 'DB_UNAVAILABLE',
                               'message': 'Hệ thống đang gặp sự cố kết nối dữ liệu. Vui lòng thử lại sau.',
                               'requestId': g.get('request_id')}), 503
@@ -75,7 +87,8 @@ def create_app(service=None):
     @app.errorhandler(Exception)
     def loi_khong_luong_truoc(e):
         # Chi tiết chỉ vào nhật ký; người gọi chỉ nhận requestId để đối chiếu.
-        log.exception('loi khong luong truoc requestId=%s', g.get('request_id'))
+        log.exception('loi khong luong truoc', extra={'ngu_canh': {
+            'requestId': g.get('request_id'), 'phuong_thuc': request.method, 'duong_dan': request.path}})
         return jsonify(error={'code': 'INTERNAL_ERROR',
                               'message': 'Đã xảy ra lỗi không mong đợi. Vui lòng thử lại sau.',
                               'requestId': g.get('request_id')}), 500
