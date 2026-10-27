@@ -11,6 +11,7 @@ def db_name():
 
 
 def database_url(dbname=None):
+    """Ghép chuỗi kết nối PostgreSQL từ biến môi trường; dbname cho phép nối tạm vào CSDL khác (db_init dùng)."""
     return (
         f"host={os.getenv('DB_HOST', 'localhost')} "
         f"port={os.getenv('DB_PORT', '5432')} "
@@ -20,5 +21,7 @@ def database_url(dbname=None):
     )
 
 
+# Giá trị mặc định chỉ để chạy thử trên máy cá nhân; khi triển khai thật phải đặt SECRET_KEY riêng trong .env,
+# vì ai biết khóa này đều tự tạo được token đăng nhập giả.
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-only-secret')
 PORT = int(os.getenv('PORT', '5000'))

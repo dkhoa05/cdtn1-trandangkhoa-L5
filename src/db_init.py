@@ -12,6 +12,7 @@ from psycopg import sql
 
 from src import config, db
 
+# Thư mục gốc của repo, để tìm migrations/ và seeds/ dù lệnh được chạy từ thư mục nào
 GOC = Path(__file__).resolve().parent.parent
 
 
@@ -39,10 +40,12 @@ def tao_csdl_neu_chua_co():
 def main():
     tao_csdl_neu_chua_co()
     with db.connect() as conn:
+        # Thứ tự quan trọng: migrations tạo bảng trước, seeds mới có bảng để nạp dữ liệu
         for thu_muc in ('migrations', 'seeds'):
             for tep in sorted((GOC / thu_muc).glob('*.sql')):
                 conn.execute(tep.read_text(encoding='utf-8'))
                 print(f'da chay {thu_muc}/{tep.name}')
+        # Đếm lại để người chạy tự thấy dữ liệu đã có; chạy lần hai các con số này không đổi
         for bang in ('service_center', 'app_user', 'part', 'part_stock', 'ticket', 'part_transaction'):
             so = conn.execute(f'SELECT COUNT(*) AS n FROM {bang}').fetchone()['n']
             print(f'  {bang}: {so} dong')

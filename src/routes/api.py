@@ -27,6 +27,8 @@ HTTP_BY_CODE = {
 
 
 def loi_json(e):
+    """Đổi AppError thành phản hồi JSON theo MỘT khuôn chung {"error": {"code", "message", "fields"}},
+    để giao diện chỉ cần một chỗ xử lý lỗi. Mã HTTP lấy từ HTTP_BY_CODE; mã lạ mặc định 400."""
     than = {'code': e.code, 'message': e.message}
     if e.fields:
         than['fields'] = e.fields
@@ -37,9 +39,11 @@ def build_api(service):
     bp = Blueprint('api', __name__, url_prefix='/api')
 
     def can_dang_nhap(ham):
+        """Decorator: chặn request thiếu hoặc sai token, rồi gắn người dùng hiện tại vào g.user cho hàm bên dưới dùng."""
         @wraps(ham)
         def boc(*a, **kw):
             tieu_de = request.headers.get('Authorization', '')
+            # Quy ước chuẩn: Authorization: Bearer <token>; cắt 7 ký tự đầu ("Bearer ") để lấy token
             if not tieu_de.startswith('Bearer '):
                 raise AppError('UNAUTHORIZED', 'Thiếu thông tin đăng nhập')
             g.user = service.lay_nguoi_dung(auth.doc_token(tieu_de[7:]))
@@ -48,6 +52,7 @@ def build_api(service):
 
     @bp.post('/auth/login')
     def dang_nhap():
+        # Chưa có mật khẩu (xem thay-doi-thiet-ke TD-08): đăng nhập chỉ bằng mã người dùng, chỉ phù hợp bản thử nghiệm
         user_id = v.dang_nhap(request.get_json(silent=True))['user_id']
         user = service.lay_nguoi_dung(user_id)
         return jsonify(token=auth.tao_token(user_id), user={
