@@ -11,6 +11,22 @@
 | GET | `/api/parts/{part_id}/transactions?center_id={id}` | Lịch sử chi tiết từng giao dịch nhập–xuất của một linh kiện | US7 |
 | GET | `/api/parts/{part_id}/transactions/summary?center_id={id}&from={date}&to={date}` | Tổng nhập, tổng xuất của linh kiện trong khoảng thời gian | US7 |
 
+Bổ sung ở buổi 10 (xem TD-08): `POST /api/auth/login` (body `{"user_id": 2}`, trả `{"token", "user"}`), `GET /api/tickets?status=DANG_XU_LY` (phiếu của trung tâm người dùng), `GET /api/tickets/{ticket_id}/parts` (linh kiện đã xuất cho phiếu, AC2.2). Mọi endpoint còn lại đòi header `Authorization: Bearer <token>`; thiếu hoặc sai token trả 401.
+
+CRUD linh kiện và tồn kho (buổi 10, xem TD-12), chỉ vai trò quản lý trung tâm được ghi, kỹ thuật viên nhận 403:
+
+| Phương thức | Đường dẫn | Mục đích | Mã lỗi chính |
+|---|---|---|---|
+| POST | `/api/parts` | Tạo linh kiện trong danh mục: `part_code`, `part_name`, `unit_price` | 400, 409 `PART_CODE_EXISTS` |
+| GET | `/api/parts/{part_id}` | Đọc một linh kiện kèm tồn kho của trung tâm người dùng | 404 |
+| PUT | `/api/parts/{part_id}` | Sửa `part_name`, `unit_price` (mã không đổi) | 400, 404 |
+| DELETE | `/api/parts/{part_id}` | Ngừng sử dụng (xóa mềm, QT-13) | 409 `PART_HAS_STOCK` khi còn trung tâm giữ tồn |
+| POST | `/api/stock` | Đưa linh kiện vào kho trung tâm với tồn 0: `part_id`, `min_threshold` | 404, 409 `STOCK_EXISTS` |
+| PATCH | `/api/stock/{part_id}` | Đổi `min_threshold` | 400, 404 |
+| DELETE | `/api/stock/{part_id}` | Gỡ khỏi kho trung tâm (xóa mềm) | 409 `STOCK_NOT_EMPTY` khi tồn lớn hơn 0 |
+
+Bản ghi chạy thật các endpoint này nằm ở `docs/export/curl-crud-linh-kien.txt`.
+
 ## A2. Quy ước chung
 
 - Định dạng trao đổi: JSON, mã hoá UTF-8. Header bắt buộc: `Content-Type: application/json`.
@@ -57,7 +73,7 @@ Xuất linh kiện cho phiếu bảo hành (US2, US3, UC2, QT-09).
 ```
 
 **RESPONSE 404 Not Found**: `ticket_id` hoặc `part_id` không tồn tại  
-**RESPONSE 409 Conflict**: số lượng xuất vượt quá tồn kho hiện tại (QT-09)  
+**RESPONSE 409 Conflict**: số lượng xuất vượt quá tồn kho hiện tại (QT-09), mã lỗi `INSUFFICIENT_STOCK`  
 **RESPONSE 422 Unprocessable**: phiếu không ở trạng thái "Đang xử lý"  
 
 ### Bảng validation
