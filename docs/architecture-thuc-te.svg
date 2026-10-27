@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 560" font-family="Arial, Helvetica, sans-serif" font-size="13">
+  <rect width="760" height="560" fill="#ffffff"/>
+  <text x="380" y="28" text-anchor="middle" font-size="16" font-weight="bold" fill="#1c2430">Kiến trúc thực tế: Quản lý kho linh kiện (L5, Track SE)</text>
+
+  <defs>
+    <marker id="mui" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#44546a"/>
+    </marker>
+  </defs>
+
+  <!-- Lớp 1: trình duyệt -->
+  <rect x="40" y="50" width="680" height="110" rx="8" fill="#eaf1fb" stroke="#1f5fbf"/>
+  <text x="56" y="72" font-weight="bold" fill="#174a96">Lớp 1. Trình bày: web/ (JavaScript thuần, chạy trong trình duyệt)</text>
+  <rect x="56" y="84" width="150" height="62" rx="5" fill="#fff" stroke="#1f5fbf"/>
+  <text x="131" y="106" text-anchor="middle">pages/</text>
+  <text x="131" y="124" text-anchor="middle" font-size="11">M1 Tồn kho, M2 Xuất kho</text>
+  <text x="131" y="138" text-anchor="middle" font-size="11">M3 Nhập kho, M4 Danh mục</text>
+  <rect x="220" y="84" width="150" height="62" rx="5" fill="#fff" stroke="#1f5fbf"/>
+  <text x="295" y="106" text-anchor="middle">components/</text>
+  <text x="295" y="124" text-anchor="middle" font-size="11">DataState: đang tải,</text>
+  <text x="295" y="138" text-anchor="middle" font-size="11">rỗng, lỗi + thử lại</text>
+  <rect x="384" y="84" width="150" height="62" rx="5" fill="#fff" stroke="#1f5fbf"/>
+  <text x="459" y="106" text-anchor="middle">api/*.api.js</text>
+  <text x="459" y="124" text-anchor="middle" font-size="11">auth, parts, tickets</text>
+  <rect x="548" y="84" width="156" height="62" rx="5" fill="#fff" stroke="#1f5fbf" stroke-width="2"/>
+  <text x="626" y="106" text-anchor="middle">api/client.js</text>
+  <text x="626" y="124" text-anchor="middle" font-size="11">nơi duy nhất gọi fetch(),</text>
+  <text x="626" y="138" text-anchor="middle" font-size="11">gắn Bearer, xử lý 401</text>
+
+  <line x1="380" y1="160" x2="380" y2="196" stroke="#44546a" stroke-width="2" marker-end="url(#mui)"/>
+  <text x="392" y="182" font-size="11" fill="#44546a">HTTP + JSON, header Authorization</text>
+
+  <!-- Lớp 2: routes -->
+  <rect x="40" y="200" width="680" height="84" rx="8" fill="#fff4e5" stroke="#c77700"/>
+  <text x="56" y="222" font-weight="bold" fill="#8a5200">Lớp 2. Giao tiếp HTTP: src/routes/api.py, src/validators/stock.py, src/app.py</text>
+  <text x="56" y="244" font-size="12">Validator kiểm định dạng (400). Route gọi service và đổi mã lỗi nghiệp vụ thành mã HTTP (bảng HTTP_BY_CODE).</text>
+  <text x="56" y="262" font-size="12">Một trình xử lý lỗi duy nhất ghi log: lỗi nghiệp vụ mức INFO, mất kết nối CSDL 503, lỗi lạ 500 kèm requestId.</text>
+
+  <line x1="380" y1="284" x2="380" y2="316" stroke="#44546a" stroke-width="2" marker-end="url(#mui)"/>
+  <text x="392" y="304" font-size="11" fill="#44546a">gọi hàm Python, truyền dữ liệu thuần</text>
+
+  <!-- Lớp 3: services -->
+  <rect x="40" y="320" width="680" height="84" rx="8" fill="#e9f7ee" stroke="#1b7a43"/>
+  <text x="56" y="342" font-weight="bold" fill="#14582f">Lớp 3. Nghiệp vụ: src/services/stock_service.py (không biết HTTP, không viết SQL)</text>
+  <text x="56" y="364" font-size="12">QT-09 không xuất vượt tồn, cảnh báo dưới ngưỡng. QT-14 và phân quyền theo trung tâm và vai trò.</text>
+  <text x="56" y="382" font-size="12">CRUD linh kiện và tồn kho với xóa mềm (QT-13). Nhận unit_of_work qua constructor nên test bằng repository giả.</text>
+
+  <line x1="380" y1="404" x2="380" y2="436" stroke="#44546a" stroke-width="2" marker-end="url(#mui)"/>
+  <text x="392" y="424" font-size="11" fill="#44546a">repository trong một transaction</text>
+
+  <!-- Lớp 4: repositories + DB -->
+  <rect x="40" y="440" width="330" height="96" rx="8" fill="#f3ecfa" stroke="#6b3fa0"/>
+  <text x="56" y="462" font-weight="bold" fill="#4b2a74">Lớp 4. Truy cập dữ liệu</text>
+  <text x="56" y="482" font-size="12">src/repositories/stock_repo.py, src/db.py</text>
+  <text x="56" y="500" font-size="12">SQL tham số hóa, khóa dòng FOR UPDATE,</text>
+  <text x="56" y="518" font-size="12">commit hoặc rollback cả lần gọi</text>
+
+  <line x1="370" y1="488" x2="410" y2="488" stroke="#44546a" stroke-width="2" marker-end="url(#mui)"/>
+
+  <rect x="414" y="440" width="306" height="96" rx="8" fill="#eef0f3" stroke="#44546a"/>
+  <text x="430" y="462" font-weight="bold" fill="#2b3544">Lưu trữ: PostgreSQL 16+</text>
+  <text x="430" y="482" font-size="12">migrations/001, 002 (IF NOT EXISTS)</text>
+  <text x="430" y="500" font-size="12">seeds/001_demo.sql (ON CONFLICT DO NOTHING)</text>
+  <text x="430" y="518" font-size="12">6 bảng, ràng buộc CHECK, khóa ngoại</text>
+</svg>
