@@ -186,3 +186,59 @@ Tổng hợp nhập–xuất theo khoảng thời gian (US7, UC5).
 - [x] Endpoint MUST (xuất linh kiện) có đủ 1 response thành công + nhiều response lỗi.
 - [x] Mọi trường trong request body tồn tại trong mô hình dữ liệu (ERD).
 - [x] Quy tắc QT-09, QT-14 đã xuất hiện trong bảng validation / mã lỗi.
+
+## A7. Ví dụ phản hồi của các endpoint còn lại
+
+Mỗi endpoint dưới đây có một phản hồi thành công và hai phản hồi lỗi, lấy từ lần chạy thật trên dữ liệu mẫu (rút gọn danh sách còn một phần tử). Các endpoint ghi dữ liệu linh kiện và tồn kho (`POST /api/parts`, `PUT`, `DELETE`, `POST /api/stock`, `DELETE /api/stock/{id}`) có ví dụ đầy đủ trong `docs/export/curl-crud-linh-kien.txt`. Mọi lỗi cùng khuôn `{"error": {"code", "message", "fields"}}`; thiếu hoặc sai token luôn trả 401 và kỹ thuật viên gọi chức năng của quản lý luôn trả 403 `FORBIDDEN`, nên hai lỗi này không lặp lại ở từng mục.
+
+### POST /api/auth/login
+Thành công, 200:
+```json
+{"token": "eyJ1aWQiOjJ9...", "user": {"user_id": 2, "full_name": "Trần Hoài Giang", "role": "KY_THUAT_VIEN", "center_id": 4, "center_name": "TTBH Ninh Kiều"}}
+```
+Lỗi 400 (mã không phải số nguyên dương): `{"error": {"code": "VALIDATION_FAILED", "message": "Dữ liệu không hợp lệ", "fields": {"user_id": "Phải là số nguyên dương"}}}`
+Lỗi 401 (mã không tồn tại hoặc tài khoản đã ngừng): `{"error": {"code": "UNAUTHORIZED", "message": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn"}}`
+
+### GET /api/parts và GET /api/parts/low-stock
+Thành công, 200 (`low-stock` cùng dạng, chỉ gồm linh kiện có `quantity` nhỏ hơn `min_threshold`):
+```json
+{"data": [{"part_id": 70, "part_code": "CAM-AP-01", "part_name": "Camera sau Apple loại 1", "unit_price": 420000, "quantity": 42, "min_threshold": 8}], "page": 1, "size": 1, "total": 128}
+```
+Lỗi 400 (`size=0`): `{"error": {"code": "VALIDATION_FAILED", "message": "Dữ liệu không hợp lệ", "fields": {"size": "Phải là số nguyên từ 1 đến 100"}}}`
+Lỗi 401 (không có header Authorization): `{"error": {"code": "UNAUTHORIZED", "message": "Thiếu thông tin đăng nhập"}}`
+
+### GET /api/tickets
+Thành công, 200:
+```json
+{"data": [{"ticket_id": 7733, "ticket_code": "BH-007733/2026", "center_id": 4, "status": "DANG_XU_LY"}], "page": 1, "size": 1, "total": 83}
+```
+Lỗi 400 (`page=0`): cùng dạng `VALIDATION_FAILED` với `fields.page`.
+Lỗi 401 (token sai hoặc hết hạn): cùng dạng `UNAUTHORIZED`.
+
+### GET /api/tickets/{ticket_id}/parts
+Thành công, 200: `{"ticket": {...như một phần tử của /api/tickets...}, "data": [{"part_code": "...", "part_name": "...", "quantity": 1, "created_at": "..."}]}`; phiếu chưa xuất gì thì `data` là mảng rỗng.
+Lỗi 404 (không có phiếu): `{"error": {"code": "TICKET_NOT_FOUND", "message": "Không tìm thấy phiếu 999999"}}`
+Lỗi 403 (phiếu của trung tâm khác): `{"error": {"code": "FORBIDDEN", "message": "Bạn chỉ thao tác được trên dữ liệu của trung tâm mình"}}`
+
+### POST /api/parts/{part_id}/stock-in
+Thành công, 201: `{"transaction_id": 4957, "center_id": 1, "part_id": 182, "quantity": 3, "new_stock": 3, "created_at": "2026-10-22T09:32:17+00:00"}`
+Lỗi 400 (`quantity` bằng 0): `{"error": {"code": "VALIDATION_FAILED", "message": "Dữ liệu không hợp lệ", "fields": {"quantity": "Số lượng nhập phải lớn hơn 0"}}}`
+Lỗi 404 (linh kiện không có trong kho trung tâm): `{"error": {"code": "PART_NOT_FOUND", "message": "Không tìm thấy linh kiện tại trung tâm này"}}`
+
+### GET /api/parts/{part_id}/transactions
+Thành công, 200 (`txn_type` là `NHAP` hoặc `XUAT`; `ticket_id` là null với giao dịch nhập):
+```json
+{"data": [{"transaction_id": 4791, "created_at": "2026-08-05T08:00:00+07:00", "txn_type": "XUAT", "quantity": 1, "ticket_id": 4283, "created_by_name": "Trần Văn Thảo"}], "page": 1, "size": 1, "total": 2}
+```
+Lỗi 403 (kỹ thuật viên gọi): `{"error": {"code": "FORBIDDEN", "message": "Chỉ quản lý trung tâm được xem lịch sử nhập–xuất"}}`
+Lỗi 404 (linh kiện không có trong kho): cùng dạng `PART_NOT_FOUND`.
+
+### GET /api/parts/{part_id}/transactions/summary
+Thành công, 200: `{"center_id": 1, "part_id": 1, "from": "2026-01-01", "to": "2026-12-31", "total_in": 0, "total_out": 2, "net_change": -2}`; không có giao dịch thì các số là 0.
+Lỗi 400 (`from` sau `to`): `{"error": {"code": "VALIDATION_FAILED", "message": "Dữ liệu không hợp lệ", "fields": {"from": "Khoảng thời gian không hợp lệ: from phải nhỏ hơn hoặc bằng to"}}}`
+Lỗi 404 (linh kiện không có trong kho): cùng dạng `PART_NOT_FOUND`.
+
+### PATCH /api/stock/{part_id}
+Thành công, 200: `{"center_id": 1, "part_id": 182, "quantity": 0, "min_threshold": 6}`
+Lỗi 400 (`min_threshold` âm): `{"error": {"code": "VALIDATION_FAILED", "message": "Dữ liệu không hợp lệ", "fields": {"min_threshold": "Ngưỡng phải là số nguyên từ 0"}}}`
+Lỗi 404: `{"error": {"code": "PART_NOT_FOUND", "message": "Không tìm thấy linh kiện tại trung tâm này"}}`

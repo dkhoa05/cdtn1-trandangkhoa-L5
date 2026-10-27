@@ -137,3 +137,10 @@ Mọi sai lệch so với thiết kế Bài tập 1 được ghi lại ở đây
 - Quyết định: `python -m src.db_init` tự tạo CSDL đích nếu chưa có; môi trường ảo chuyển sang mục 2 (yêu cầu môi trường); mục 3 còn bốn bước: sao chép .env, cài thư viện, dựng CSDL, chạy ứng dụng.
 - Lý do: người chấm chỉ phải làm bốn lệnh; lệnh tạo CSDL thủ công bằng psql không còn cần.
 - Ảnh hưởng: src/db_init.py, README mục 2 và 3, tests/test_tai_lieu.py; đồng thời sửa ký tự điều khiển ẩn làm hỏng dòng `venv\Scripts\activate` (BUG-005).
+
+### TD-20. Bổ sung comment, ví dụ API và ghi chú về địa chỉ API của giao diện
+
+- Lý do phát sinh: rà soát lại mã so với hướng dẫn của môn thì thấy hàm công khai ở repository, validator, lớp client JavaScript chưa có chú thích; hợp đồng API mới có ví dụ đầy đủ cho vài endpoint; README chưa nói rõ giao diện được chạy thế nào.
+- Quyết định: THÊM docstring và JSDoc theo bốn ý (làm gì, nhận, trả, lỗi) cho hàm công khai, comment giải thích lý do ở các chỗ khó (khóa dòng khi xuất kho, xử lý 401, bool trong kiểm tra số nguyên, độ trễ khi gõ tìm kiếm); THÊM mục A7 trong api-contract.md với ví dụ thành công và lỗi lấy từ lần chạy thật; GIỮ NGUYÊN việc giao diện gọi API bằng địa chỉ cùng nguồn.
+- Lý do: người đọc mã sau này hiểu được vì sao viết như vậy mà không phải đoán. Địa chỉ API không cấu hình bằng biến môi trường vì Flask phục vụ cả giao diện lẫn API trên cùng một cổng, nên không có địa chỉ nào khác để cấu hình; nếu sau này tách giao diện sang máy chủ riêng thì khi đó mới cần biến này.
+- Ảnh hưởng: chỉ thêm chú thích và tài liệu, không đổi hành vi; 47 test vẫn PASS.

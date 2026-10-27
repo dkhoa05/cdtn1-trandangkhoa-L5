@@ -33,6 +33,8 @@ Bốn bước, mỗi bước một lệnh, chạy trong thư mục gốc của r
 
 Kiểm tra hệ thống chạy đúng: mở http://localhost:5000/health phải trả `{"db":"ok","status":"ok"}`; mở http://localhost:5000 và đăng nhập bằng mã người dùng `2` (kỹ thuật viên trung tâm Ninh Kiều) hoặc `101` (quản lý trung tâm Quận 10).
 
+Giao diện web không có bước chạy riêng: `python -m src.app` phục vụ cả API lẫn trang web trên cùng một cổng, nên chỉ cần mở http://localhost:5000 sau bước 4 và không phải cài hay chạy thêm gì cho `web/`. Giao diện luôn gọi API ở cùng địa chỉ với trang, nên không có biến cấu hình địa chỉ API; nếu tắt bước 4 thì giao diện hiện thông báo lỗi kèm nút Thử lại.
+
 Nếu mỗi request mất vài giây trên Windows, đặt `DB_HOST=127.0.0.1` trong `.env` (tên `localhost` có thể được thử bằng IPv6 trước).
 
 Nếu báo cổng 5000 đang bận, đặt `PORT=5001` trong `.env` rồi chạy lại `python -m src.app` và mở http://localhost:5001.
