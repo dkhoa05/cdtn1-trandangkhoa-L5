@@ -32,9 +32,9 @@
 
   <!-- Lớp 2: routes -->
   <rect x="40" y="200" width="680" height="84" rx="8" fill="#fff4e5" stroke="#c77700"/>
-  <text x="56" y="222" font-weight="bold" fill="#8a5200">Lớp 2. Giao tiếp HTTP: src/routes/api.py, src/validators/stock.py, src/app.py</text>
-  <text x="56" y="244" font-size="12">Validator kiểm định dạng (400). Route gọi service và đổi mã lỗi nghiệp vụ thành mã HTTP (bảng HTTP_BY_CODE).</text>
-  <text x="56" y="262" font-size="12">Một trình xử lý lỗi duy nhất ghi log: lỗi nghiệp vụ mức INFO, mất kết nối CSDL 503, lỗi lạ 500 kèm requestId.</text>
+  <text x="56" y="222" font-weight="bold" fill="#8a5200">Lớp 2. Giao tiếp HTTP: routes (api.py, views.py), validators, app.py, log_config.py</text>
+  <text x="56" y="244" font-size="12">Validator kiểm định dạng (400). Route đổi mã lỗi nghiệp vụ thành mã HTTP; to_*_view là hợp đồng dữ liệu.</text>
+  <text x="56" y="262" font-size="12">Trình xử lý lỗi duy nhất; log JSON ra stdout có requestId (INFO nghiệp vụ, 503 mất CSDL, 500 lỗi lạ).</text>
 
   <line x1="380" y1="284" x2="380" y2="316" stroke="#44546a" stroke-width="2" marker-end="url(#mui)"/>
   <text x="392" y="304" font-size="11" fill="#44546a">gọi hàm Python, truyền dữ liệu thuần</text>
