@@ -62,7 +62,7 @@ Mọi sai lệch so với thiết kế Bài tập 1 được ghi lại ở đây
 - Lý do phát sinh: API contract BT1 không có cách xác định người dùng, trong khi QT-14 và NFR3 cần biết trung tâm của người gọi; màn hình M2 cần chọn phiếu đang xử lý và xem linh kiện đã dùng (AC2.2) nhưng contract chưa có endpoint tương ứng.
 - Quyết định: THÊM `POST /api/auth/login` (nhận `user_id`, trả token ký bằng SECRET_KEY, hạn 8 giờ), `GET /api/tickets?status=` và `GET /api/tickets/{id}/parts`. Mọi endpoint khác đòi header `Authorization: Bearer`.
 - Lý do: tối thiểu để giao diện chạy được với dữ liệu thật mà không đổi mô hình dữ liệu.
-- Ảnh hưởng: docs/api-contract.md. Hạn chế đã biết: bảng app_user chưa có mật khẩu nên đăng nhập chỉ bằng mã người dùng, chỉ phù hợp mức prototype. Hết hạn hoặc sai token trả 401, frontend xóa token và về trang đăng nhập.
+- Ảnh hưởng: docs/api-contract.md. Hạn chế đã biết: bảng app_user chưa có mật khẩu nên đăng nhập chỉ bằng mã người dùng, chỉ phù hợp mức prototype. Hết hạn hoặc sai token trả 401, frontend xóa token và về trang đăng nhập. Cách lưu token: `sessionStorage` của trình duyệt (mất khi đóng tab, không ghi trong mã nguồn). Hạn chế: mã JavaScript trên cùng trang đọc được token nếu trang có lỗ hổng chèn mã (XSS); giao diện giảm rủi ro này bằng cách chỉ dựng DOM bằng textContent, không dùng innerHTML. Hướng nâng cấp: cookie HttpOnly do máy chủ đặt.
 
 ### TD-09. Mã lỗi nghiệp vụ và nội dung thông báo
 
@@ -110,3 +110,30 @@ Mọi sai lệch so với thiết kế Bài tập 1 được ghi lại ở đây
 - Kiểm tra độ nhạy: bỏ `FOR UPDATE` khỏi truy vấn khóa dòng thì kiểm thử đồng thời FAIL 4 trong 5 lần chạy (lỗi tranh chấp không xảy ra mọi lần); giữ nguyên mã thì PASS cả 3 lần.
 - Ảnh hưởng: tests/test_tich_hop_pg.py, README mục 5.
 
+### TD-16. Một StockService thay cho IssueService và ReceiptService
+
+- Phản hồi hoặc lý do phát sinh: thiết kế BT1 (docs/design.md mục 3) chia lớp nghiệp vụ thành StockService, IssueService, ReceiptService.
+- Quyết định: SỬA, gộp thành một lớp `StockService` trong `src/services/stock_service.py`.
+- Lý do: xuất kho, nhập kho và tra cứu cùng dùng chung quy tắc QT-14 và cùng khóa dòng tồn kho trong một transaction; tách ba lớp chỉ làm lặp phần kiểm tra trung tâm mà không thêm ranh giới nào.
+- Ảnh hưởng: không đổi API hay hợp đồng; các repository đúng như sơ đồ BT1 (Part, Stock, Transaction, Ticket, User).
+
+### TD-17. Giao diện JavaScript thuần thay cho Flask templates
+
+- Lý do phát sinh: BT1 ghi lớp trình bày là "Flask routes + templates"; buổi 9 yêu cầu giao diện gọi API qua lớp client riêng.
+- Quyết định: SỬA, giao diện nằm ở `web/` (JavaScript thuần, không cần bước build) gọi API qua `web/src/api/client.js`; Flask chỉ phục vụ tệp tĩnh và API.
+- Lý do: tách hẳn lớp trình bày khỏi lớp nghiệp vụ, đúng yêu cầu "mọi lệnh gọi mạng đi qua một lớp client" và kiểm bằng `grep "fetch(" web/src/pages` cho kết quả rỗng.
+- Ảnh hưởng: wireframe M1, M2, M3 giữ nguyên; thêm màn hình M4 (TD-12); README mục 4.
+
+### TD-18. Hàm chuyển đổi ở ranh giới và log JSON có requestId
+
+- Lý do phát sinh: tài liệu buổi 9 yêu cầu giao diện không đọc thẳng tên cột và mỗi ranh giới có hợp đồng viết ra; tài liệu buổi 11 yêu cầu log JSON có requestId.
+- Quyết định: THÊM `src/routes/views.py` (các hàm `to_*_view` kèm hợp đồng) và `src/log_config.py` (log JSON ra stdout, header `X-Request-Id`, che trường nhạy cảm); mức log theo `LOG_LEVEL`.
+- Lý do: đổi tên một cột chỉ phải sửa một chỗ; mọi dòng log truy được về một yêu cầu.
+- Ảnh hưởng: tests/test_hop_dong.py, tests/test_log.py; thay thế phần định dạng log dạng chữ của TD-13 (xử lý lỗi 503 và ghi log một lần giữ nguyên).
+
+### TD-19. Rút README còn bốn bước
+
+- Lý do phát sinh: buổi 1 và buổi 2 ghi README hướng dẫn chạy tối đa bốn bước.
+- Quyết định: `python -m src.db_init` tự tạo CSDL đích nếu chưa có; môi trường ảo chuyển sang mục 2 (yêu cầu môi trường); mục 3 còn bốn bước: sao chép .env, cài thư viện, dựng CSDL, chạy ứng dụng.
+- Lý do: người chấm chỉ phải làm bốn lệnh; lệnh tạo CSDL thủ công bằng psql không còn cần.
+- Ảnh hưởng: src/db_init.py, README mục 2 và 3, tests/test_tai_lieu.py; đồng thời sửa ký tự điều khiển ẩn làm hỏng dòng `venv\Scripts\activate` (BUG-005).
