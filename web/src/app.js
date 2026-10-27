@@ -15,6 +15,7 @@ const TRANG = {
   '#/catalog': ['Danh mục', CatalogPage],
 };
 
+// Vẽ lại màn hình theo địa chỉ sau dấu # (ví dụ #/stock). Chưa đăng nhập thì mọi địa chỉ đều đưa về trang đăng nhập.
 function ve() {
   const p = phien.doc();
   const hash = location.hash || '#/stock';
@@ -41,5 +42,6 @@ function ve() {
   TRANG[hash][1](noiDung, { nguoiDung });
 }
 
+// Đổi tab hay bấm Back chỉ đổi phần sau dấu #, nên nghe hashchange là đủ, không cần tải lại trang
 window.addEventListener('hashchange', ve);
 ve();

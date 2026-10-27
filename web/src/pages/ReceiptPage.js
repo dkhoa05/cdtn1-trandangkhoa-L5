@@ -7,7 +7,9 @@ import { gio, h, thongBao } from '../components/dom.js';
 const homNay = () => new Date().toISOString().slice(0, 10);
 const dauThang = () => homNay().slice(0, 8) + '01';
 
+/** M3: quản lý nhập kho, xem tổng nhập xuất theo khoảng ngày và lịch sử giao dịch của linh kiện đã chọn. */
 export function ReceiptPage(goc, { nguoiDung }) {
+  // Ẩn ở giao diện chỉ để người dùng đỡ nhầm; việc chặn thật nằm ở máy chủ (service trả 403), không dựa vào dòng này
   if (nguoiDung.role !== 'QUAN_LY_TT') {
     goc.replaceChildren(h('section', { class: 'khung' }, h('h1', {}, 'Nhập kho và lịch sử'),
       thongBao('canhbao', 'Chỉ quản lý trung tâm được nhập kho và xem lịch sử nhập–xuất.')));

@@ -4,6 +4,7 @@ import { DataState } from '../components/DataState.js';
 import { PartPicker } from '../components/PartPicker.js';
 import { gio, h, thongBao } from '../components/dom.js';
 
+/** M2: chọn phiếu đang xử lý, chọn linh kiện, nhập số lượng rồi xuất; bên dưới là danh sách linh kiện đã xuất cho phiếu đó. */
 export function IssuePage(goc) {
   let phieuId = null;
   let linhKien = null;
@@ -46,7 +47,7 @@ export function IssuePage(goc) {
         khungKetQua.append(thongBao('loi', 'Hãy chọn phiếu và linh kiện trước khi xuất.'));
         return;
       }
-      nut.disabled = true;
+      nut.disabled = true;     // khóa nút trong lúc chờ máy chủ, tránh bấm hai lần làm xuất trùng
       try {
         const kq = await xuatLinhKien(phieuId, linhKien.part_id, Number(soLuong.value));
         khungKetQua.append(thongBao('ok', `Đã xuất ${kq.quantity} × ${linhKien.part_code}. Tồn còn lại: ${kq.remaining_stock}.`));

@@ -7,6 +7,7 @@ import { h, thongBao } from '../components/dom.js';
 
 const dinhDangGia = (v) => Number(v).toLocaleString('vi-VN') + ' đ';
 
+/** M4: quản lý thêm, sửa, ngừng sử dụng linh kiện và chỉnh ngưỡng cảnh báo trong kho trung tâm. */
 export function CatalogPage(goc, { nguoiDung }) {
   if (nguoiDung.role !== 'QUAN_LY_TT') {
     goc.replaceChildren(h('section', { class: 'khung' }, h('h1', {}, 'Danh mục linh kiện'),

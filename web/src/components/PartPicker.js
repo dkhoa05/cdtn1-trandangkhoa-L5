@@ -10,6 +10,7 @@ export function PartPicker(onChange) {
   const o = h('input', {
     type: 'search', placeholder: 'Lọc theo mã hoặc tên linh kiện', 'aria-label': 'Lọc linh kiện',
     oninput: (e) => {
+      // Chờ 250 ms sau lần gõ cuối mới gọi API, để gõ "ABC" chỉ tốn một lần gọi thay vì ba
       clearTimeout(hen);
       hen = setTimeout(() => { q = e.target.value.trim(); onChange(null); ds.taiLai(); }, 250);
     },

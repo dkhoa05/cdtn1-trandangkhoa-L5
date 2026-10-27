@@ -3,6 +3,7 @@ import { timLinhKien } from '../api/parts.api.js';
 import { DataState } from '../components/DataState.js';
 import { h } from '../components/dom.js';
 
+/** M1: bảng tồn kho của trung tâm người dùng, có tìm theo mã hoặc tên, lọc dưới ngưỡng và phân trang. */
 export function StockPage(goc, { nguoiDung }) {
   let q = '';
   let duoiNguong = false;
@@ -25,6 +26,7 @@ export function StockPage(goc, { nguoiDung }) {
           h('thead', {}, h('tr', {}, ['Mã', 'Tên linh kiện', 'Tồn', 'Ngưỡng', 'Trạng thái']
             .map((t) => h('th', { scope: 'col' }, t)))),
           h('tbody', {}, d.data.map((p) => {
+            // Dùng "<" chứ không phải "<=": tồn đúng bằng ngưỡng vẫn còn đủ, chỉ thấp hơn mới cảnh báo
             const thap = p.quantity < p.min_threshold;
             return h('tr', {},
               h('td', {}, p.part_code), h('td', {}, p.part_name),
