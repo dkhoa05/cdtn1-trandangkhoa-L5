@@ -147,3 +147,12 @@ def dang_nhap(client):
         return {'Authorization': 'Bearer ' + r.get_json()['token']}
     return _dang_nhap
 
+
+@pytest.fixture
+def dang_nhap_token(client, service, kho):
+    """Đăng nhập khi CSDL còn sống, rồi 'tắt' CSDL: trả client kèm .token."""
+    r = client.post('/api/auth/login', json={'user_id': 2})
+    client.token = r.get_json()['token']
+    from tests.test_api import _service_mat_db
+    service.uow = _service_mat_db().uow
+    return client

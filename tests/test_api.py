@@ -58,3 +58,28 @@ def test_loi_khong_luong_truoc_tra_500_khong_lo_chi_tiet(client, service, dang_n
     assert 'division' not in r.get_data(as_text=True)
     assert r.get_json()['error']['requestId']
 
+
+# ---- Mất kết nối CSDL: lỗi hạ tầng phải ra 503 kèm mã tra cứu, không phải 500 chung chung ----
+def _service_mat_db():
+    from contextlib import contextmanager
+
+    import psycopg
+
+    from src.services.stock_service import StockService
+
+    @contextmanager
+    def uow():
+        raise psycopg.OperationalError('connection refused')
+        yield  # pragma: no cover
+
+    return StockService(uow)
+
+
+def test_mat_ket_noi_csdl_tra_503_kem_ma_tra_cuu(dang_nhap_token):
+    client = dang_nhap_token
+    r = client.get('/api/parts', headers={'Authorization': 'Bearer ' + client.token})
+    assert r.status_code == 503
+    loi = r.get_json()['error']
+    assert loi['code'] == 'DB_UNAVAILABLE'
+    assert loi['requestId']
+    assert 'refused' not in r.get_data(as_text=True)      # không lộ chi tiết kỹ thuật
