@@ -6,9 +6,10 @@ import { h } from './dom.js';
  *   veKhiCoDuLieu(d) -> Node, chỉ gọi khi có dữ liệu
  *   rong(d)          -> true nếu dữ liệu coi là rỗng
  *   noiDungRong      -> chuỗi, hoặc hàm trả chuỗi (phân biệt "chưa có dữ liệu" với "bộ lọc không ra kết quả")
+ *   hanhDongRong(d)  -> (tùy chọn) Node đặt dưới câu giải thích, ví dụ nút "Xóa bộ lọc"; trả null nếu không cần
  * Trả về { taiLai } để trang gọi lại khi dữ liệu đổi.
  */
-export function DataState(goc, { tai, veKhiCoDuLieu, rong, noiDungRong = 'Không có dữ liệu.' }) {
+export function DataState(goc, { tai, veKhiCoDuLieu, rong, noiDungRong = 'Không có dữ liệu.', hanhDongRong }) {
   let lanTai = 0;
 
   async function taiLai() {
@@ -18,7 +19,9 @@ export function DataState(goc, { tai, veKhiCoDuLieu, rong, noiDungRong = 'Không
       const d = await tai();
       if (lan !== lanTai) return;
       goc.replaceChildren(rong && rong(d)
-        ? h('p', { class: 'ds ds-rong' }, typeof noiDungRong === 'function' ? noiDungRong(d) : noiDungRong)
+        ? h('div', { class: 'ds ds-rong' },
+          h('p', {}, typeof noiDungRong === 'function' ? noiDungRong(d) : noiDungRong),
+          hanhDongRong ? hanhDongRong(d) : null)
         : veKhiCoDuLieu(d));
     } catch (e) {
       if (lan !== lanTai) return;

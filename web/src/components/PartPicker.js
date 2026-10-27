@@ -14,10 +14,19 @@ export function PartPicker(onChange) {
       hen = setTimeout(() => { q = e.target.value.trim(); onChange(null); ds.taiLai(); }, 250);
     },
   });
+  function xoaTuKhoa() {
+    q = '';
+    o.value = '';
+    onChange(null);
+    ds.taiLai();
+  }
   const ds = DataState(cho, {
     tai: () => timLinhKien({ q, size: 100 }),
     rong: (d) => d.data.length === 0,
     noiDungRong: () => (q ? 'Không tìm thấy linh kiện nào khớp từ khóa.' : 'Kho trung tâm chưa có linh kiện nào.'),
+    hanhDongRong: () => (q
+      ? h('button', { type: 'button', class: 'phu', onclick: xoaTuKhoa }, 'Xóa từ khóa')
+      : null),
     veKhiCoDuLieu: (d) => {
       const chon = h('select', {
         'aria-label': 'Linh kiện',

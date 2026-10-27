@@ -14,7 +14,10 @@ export function StockPage(goc, { nguoiDung }) {
     rong: (d) => d.data.length === 0,
     noiDungRong: () => (q || duoiNguong                  // AC1.2
       ? 'Không tìm thấy linh kiện nào khớp bộ lọc.'
-      : 'Kho trung tâm chưa có linh kiện nào.'),
+      : 'Kho trung tâm chưa có linh kiện nào. Quản lý có thể thêm ở mục Danh mục.'),
+    hanhDongRong: () => (q || duoiNguong
+      ? h('button', { type: 'button', class: 'phu', onclick: xoaBoLoc }, 'Xóa bộ lọc')
+      : null),
     veKhiCoDuLieu: (d) => {
       const tongTrang = Math.max(1, Math.ceil(d.total / d.size));
       return h('div', {},
@@ -35,6 +38,14 @@ export function StockPage(goc, { nguoiDung }) {
           h('button', { type: 'button', disabled: page >= tongTrang, onclick: () => { page++; ds.taiLai(); } }, 'Sau')));
     },
   });
+
+  function xoaBoLoc() {
+    q = '';
+    duoiNguong = false;
+    page = 1;
+    loc.reset();
+    ds.taiLai();
+  }
 
   const loc = h('form', {
     class: 'thanh-loc',

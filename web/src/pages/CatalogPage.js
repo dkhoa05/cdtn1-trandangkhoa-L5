@@ -43,7 +43,10 @@ export function CatalogPage(goc, { nguoiDung }) {
     rong: (d) => d.data.length === 0,
     noiDungRong: () => (q
       ? 'Không tìm thấy linh kiện nào khớp từ khóa.'
-      : 'Kho trung tâm chưa có linh kiện nào. Hãy thêm linh kiện đầu tiên.'),
+      : 'Kho trung tâm chưa có linh kiện nào. Hãy thêm linh kiện đầu tiên ở biểu mẫu phía trên.'),
+    hanhDongRong: () => (q
+      ? h('button', { type: 'button', class: 'phu', onclick: xoaTuKhoa }, 'Xóa từ khóa')
+      : null),
     veKhiCoDuLieu: (d) => {
       const tongTrang = Math.max(1, Math.ceil(d.total / d.size));
       return h('div', {},
@@ -106,6 +109,13 @@ export function CatalogPage(goc, { nguoiDung }) {
       sua && h('button', { type: 'button', class: 'phu', onclick: () => { dangSua = null; veForm(); } }, 'Hủy'))));
   }
   veForm();
+
+  function xoaTuKhoa() {
+    q = '';
+    page = 1;
+    loc.reset();
+    ds.taiLai();
+  }
 
   const loc = h('form', {
     class: 'thanh-loc',

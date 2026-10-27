@@ -49,4 +49,12 @@ button.phu { background: transparent; color: var(--chu); border-color: var(--vie
 .luoi-form { margin-bottom: 8px; }
 .luoi-form input { width: 100%; max-width: 420px; }
 .hang-nut { display: flex; gap: 8px; }
-@media (max-width: 600px) { #app { padding: 8px; } th, td { padding: 6px 4px; font-size: 14px; } }
+@media (max-width: 600px) {
+  #app { padding: 8px; }
+  .khung { padding: 12px; }
+  th, td { padding: 6px 4px; font-size: 14px; }
+  table { display: block; overflow-x: auto; max-width: 100%; }   /* bảng rộng cuộn ngang trong khung */
+  .thanh { padding: 8px; }
+  .ds-rong .phu { margin-top: 6px; }
+}
+.ds-rong p { margin: 0 0 6px; }
