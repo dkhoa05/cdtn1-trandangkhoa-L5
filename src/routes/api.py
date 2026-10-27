@@ -8,6 +8,7 @@ from flask import Blueprint, g, jsonify, request
 
 from src import auth
 from src.errors import AppError
+from src.routes import views as hd
 from src.validators import stock as v
 
 HTTP_BY_CODE = {
@@ -56,95 +57,101 @@ def build_api(service):
     @can_dang_nhap
     def tim_linh_kien():
         page, size = v.phan_trang(request.args)
-        return jsonify(service.tim_linh_kien(
+        return jsonify(hd.to_page_view(service.tim_linh_kien(
             g.user, v.so_nguyen_tuy_chon(request.args, 'center_id'),
-            (request.args.get('q') or '').strip() or None, page, size))
+            (request.args.get('q') or '').strip() or None, page, size), hd.to_part_stock_view))
 
     @bp.get('/parts/low-stock')
     @can_dang_nhap
     def duoi_nguong():
         page, size = v.phan_trang(request.args)
-        return jsonify(service.tim_linh_kien(
+        return jsonify(hd.to_page_view(service.tim_linh_kien(
             g.user, v.so_nguyen_tuy_chon(request.args, 'center_id'), None, page, size,
-            chi_duoi_nguong=True))
+            chi_duoi_nguong=True), hd.to_part_stock_view))
 
     @bp.post('/parts')
     @can_dang_nhap
     def tao_linh_kien():
         d = v.tao_linh_kien(request.get_json(silent=True))
         part = service.tao_linh_kien(g.user, d['part_code'], d['part_name'], d['unit_price'])
-        return jsonify(part), 201
+        return jsonify(hd.to_part_view(part)), 201
 
     @bp.get('/parts/<int:part_id>')
     @can_dang_nhap
     def lay_linh_kien(part_id):
-        return jsonify(service.lay_linh_kien(g.user, part_id))
+        return jsonify(hd.to_part_detail_view(service.lay_linh_kien(g.user, part_id)))
 
     @bp.put('/parts/<int:part_id>')
     @can_dang_nhap
     def sua_linh_kien(part_id):
         d = v.sua_linh_kien(request.get_json(silent=True))
-        return jsonify(service.sua_linh_kien(g.user, part_id, d['part_name'], d['unit_price']))
+        return jsonify(hd.to_part_view(
+            service.sua_linh_kien(g.user, part_id, d['part_name'], d['unit_price'])))
 
     @bp.delete('/parts/<int:part_id>')
     @can_dang_nhap
     def ngung_linh_kien(part_id):
-        return jsonify(service.ngung_linh_kien(g.user, part_id))
+        return jsonify(hd.to_deactivated_view(service.ngung_linh_kien(g.user, part_id)))
 
     @bp.post('/stock')
     @can_dang_nhap
     def them_vao_kho():
         d = v.them_vao_kho(request.get_json(silent=True))
-        return jsonify(service.them_vao_kho(g.user, d['part_id'], d['min_threshold'])), 201
+        return jsonify(hd.to_stock_view(
+            service.them_vao_kho(g.user, d['part_id'], d['min_threshold']))), 201
 
     @bp.patch('/stock/<int:part_id>')
     @can_dang_nhap
     def doi_nguong(part_id):
         d = v.doi_nguong(request.get_json(silent=True))
-        return jsonify(service.doi_nguong(g.user, part_id, d['min_threshold']))
+        return jsonify(hd.to_stock_view(service.doi_nguong(g.user, part_id, d['min_threshold'])))
 
     @bp.delete('/stock/<int:part_id>')
     @can_dang_nhap
     def ngung_ton_kho(part_id):
-        return jsonify(service.ngung_ton_kho(g.user, part_id))
+        return jsonify(hd.to_deactivated_view(service.ngung_ton_kho(g.user, part_id)))
 
     @bp.post('/parts/<int:part_id>/stock-in')
     @can_dang_nhap
     def nhap_kho(part_id):
         d = v.nhap_kho(request.get_json(silent=True))
-        return jsonify(service.nhap_kho(g.user, part_id, d['center_id'], d['quantity'])), 201
+        return jsonify(hd.to_stock_in_view(
+            service.nhap_kho(g.user, part_id, d['center_id'], d['quantity']))), 201
 
     @bp.get('/parts/<int:part_id>/transactions')
     @can_dang_nhap
     def lich_su(part_id):
         page, size = v.phan_trang(request.args)
-        return jsonify(service.lich_su(
-            g.user, part_id, v.so_nguyen_tuy_chon(request.args, 'center_id'), page, size))
+        return jsonify(hd.to_page_view(service.lich_su(
+            g.user, part_id, v.so_nguyen_tuy_chon(request.args, 'center_id'), page, size),
+            hd.to_transaction_view))
 
     @bp.get('/parts/<int:part_id>/transactions/summary')
     @can_dang_nhap
     def tong_hop(part_id):
         tu, den = v.khoang_ngay(request.args)
-        return jsonify(service.tong_hop(
-            g.user, part_id, v.so_nguyen_tuy_chon(request.args, 'center_id'), tu, den))
+        return jsonify(hd.to_summary_view(service.tong_hop(
+            g.user, part_id, v.so_nguyen_tuy_chon(request.args, 'center_id'), tu, den)))
 
     @bp.get('/tickets')
     @can_dang_nhap
     def ds_phieu():
         page, size = v.phan_trang(request.args)
-        return jsonify(service.ds_phieu(
-            g.user, request.args.get('status') or None, page, size))
+        return jsonify(hd.to_page_view(service.ds_phieu(
+            g.user, request.args.get('status') or None, page, size), hd.to_ticket_view))
 
     @bp.get('/tickets/<int:ticket_id>/parts')
     @can_dang_nhap
     def linh_kien_cua_phieu(ticket_id):
-        return jsonify(service.linh_kien_cua_phieu(g.user, ticket_id))
+        kq = service.linh_kien_cua_phieu(g.user, ticket_id)
+        return jsonify(ticket=hd.to_ticket_view(kq['ticket']),
+                       data=[hd.to_used_part_view(x) for x in kq['data']])
 
     @bp.post('/tickets/<int:ticket_id>/parts')
     @can_dang_nhap
     def xuat_kho(ticket_id):
         d = v.xuat_kho(request.get_json(silent=True))
-        return jsonify(service.xuat_linh_kien(
-            g.user, ticket_id, d['part_id'], d['quantity'])), 201
+        return jsonify(hd.to_issue_view(service.xuat_linh_kien(
+            g.user, ticket_id, d['part_id'], d['quantity']))), 201
 
     return bp
