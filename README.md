@@ -50,7 +50,9 @@ Biến môi trường (xem `.env.example`): `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB
 - tests/: bộ kiểm thử
 
 ## 5. Kiểm thử
-`pytest` chạy 31 test, không cần PostgreSQL (dùng repository giả), gồm ba loại: luồng đúng, giá trị biên (xuất đúng bằng tồn, vượt tồn 1 đơn vị, tồn bằng ngưỡng), dữ liệu sai và kiểm soát truy cập theo trung tâm.
+Kiểm thử tích hợp trên PostgreSQL thật (ngắt lỗi giữa chừng, tám luồng xuất đồng thời) mặc định bị bỏ qua; chạy bằng `$env:RUN_PG_TESTS="1"; pytest tests/test_tich_hop_pg.py` sau khi đã chạy `python -m src.db_init`.
+
+`pytest` chạy 32 test, không cần PostgreSQL (dùng repository giả), gồm ba loại: luồng đúng, giá trị biên (xuất đúng bằng tồn, vượt tồn 1 đơn vị, tồn bằng ngưỡng), dữ liệu sai và kiểm soát truy cập theo trung tâm.
 
 ## 6. Trạng thái hiện tại (buổi 10)
 - [x] Điều chỉnh thiết kế theo phản hồi BT1 (docs/thay-doi-thiet-ke.md)
@@ -58,9 +60,9 @@ Biến môi trường (xem `.env.example`): `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB
 - [x] Migration và dữ liệu mẫu
 - [x] Tra cứu tồn kho, xuất, nhập kho và lịch sử qua 3 lớp (routes, services, repositories)
 - [x] Xuất, nhập kho với quy tắc QT-09, QT-14
-- [x] 31 kiểm thử thuộc ba loại
+- [x] 32 kiểm thử thuộc ba loại, cộng 2 kiểm thử tích hợp PostgreSQL (NFR2)
 - [x] Màn hình M1, M2, M3 gọi API thật, có trạng thái đang tải, rỗng, lỗi
 - [x] CRUD linh kiện và tồn kho (xóa mềm, migration 002), màn hình M4 Danh mục
-- [ ] Phần còn lại của BT2 và BT3: kiểm thử ngắt lỗi giữa chừng, xuất đồng thời (TD-02)
+- [x] Kiểm thử ngắt lỗi giữa chừng và xuất đồng thời (TD-02, TD-15)
 
 Ảnh chạy toàn luồng trên dữ liệu mẫu thật: docs/export/e2e-*.png. Bản ghi gọi API bằng curl: docs/export/curl-crud-linh-kien.txt.

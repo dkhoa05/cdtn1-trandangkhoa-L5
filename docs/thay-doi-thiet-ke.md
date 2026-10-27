@@ -96,3 +96,17 @@ Mọi sai lệch so với thiết kế Bài tập 1 được ghi lại ở đây
 - Lý do: người dùng thấy mã tra cứu thay vì chi tiết kỹ thuật, người vận hành tra log bằng `requestId`, log chỉ ghi mã lỗi và định danh chứ không ghi tên hay số điện thoại.
 - Ảnh hưởng: src/app.py, .env.example, tests/test_api.py, docs/bug-log.md.
 
+### TD-14. Cảnh báo dưới ngưỡng chỉ hiển thị, không gửi đi
+
+- Lý do phát sinh: đặc tả UC2 bước 7a trong BT1 viết hệ thống "tạo cảnh báo gửi tới quản lý trung tâm"; BT1 đồng thời loại trừ SMS và email khỏi phạm vi (mục WON'T), nên chưa có kênh gửi.
+- Quyết định: SỬA cách hiện thực. Phản hồi xuất kho trả cờ `low_stock_alert` để màn hình M2 hiện cảnh báo ngay cho người xuất; quản lý thấy danh sách dưới ngưỡng ở màn hình M1 (bộ lọc "dưới ngưỡng") và endpoint `GET /api/parts/low-stock`.
+- Lý do: cảnh báo tính từ `quantity < min_threshold` nên luôn đúng với tồn thật, không cần lưu bảng cảnh báo hay hạ tầng gửi tin.
+- Ảnh hưởng: UC7 trong docs/srs.md được hiểu là "hiển thị cảnh báo", không phải "gửi thông báo".
+
+### TD-15. Quy ước đặt tên và kiểm thử tích hợp trên PostgreSQL
+
+- Quy ước đặt tên (ghi lại để nhất quán): tên bảng, cột, đường dẫn API và mã lỗi dùng tiếng Anh theo bảng thuật ngữ mục 1 của SRS (`part`, `part_stock`, `ticket`, `INSUFFICIENT_STOCK`); tên hàm, biến và thông báo trong mã nghiệp vụ dùng tiếng Việt không dấu hoặc có dấu cho thông báo hiển thị (`xuat_linh_kien`, `ton`).
+- Thực hiện cam kết của TD-02: thêm `tests/test_tich_hop_pg.py` gồm hai kiểm thử trên PostgreSQL thật, một kiểm thử 50 lần ngắt lỗi giữa chừng sau khi trừ tồn (tồn và log không lệch) và một kiểm thử tám luồng cùng xuất khi chỉ còn 1 (đúng một luồng thành công). Mặc định bỏ qua để bộ kiểm thử chính không phụ thuộc CSDL có sẵn; bật bằng `RUN_PG_TESTS=1`.
+- Kiểm tra độ nhạy: bỏ `FOR UPDATE` khỏi truy vấn khóa dòng thì kiểm thử đồng thời FAIL 4 trong 5 lần chạy (lỗi tranh chấp không xảy ra mọi lần); giữ nguyên mã thì PASS cả 3 lần.
+- Ảnh hưởng: tests/test_tich_hop_pg.py, README mục 5.
+
