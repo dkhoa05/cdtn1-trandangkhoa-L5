@@ -1,0 +1,78 @@
+=== 1. TAO linh kien (quan ly TT01)
+{"part_code":"LK-DEMO-27066","part_id":182,"part_name":"Loa ngoai demo","unit_price":120000}
+part_id=182
+
+$ curl -XPOST localhost:5000/api/stock -H Content-Type: application/json -H Authorization: Bearer <token> -d {"part_id":182,"min_threshold":4}
+{"center_id":1,"min_threshold":4,"part_id":182,"quantity":0}
+
+HTTP 201
+
+=== 2. DOC
+$ curl localhost:5000/api/parts/182 -H Authorization: Bearer <token>
+{"part_code":"LK-DEMO-27066","part_id":182,"part_name":"Loa ngoai demo","stock":{"is_active":true,"min_threshold":4,"quantity":0},"unit_price":120000}
+
+HTTP 200
+
+=== 3. SUA ten, gia va nguong
+$ curl -XPUT localhost:5000/api/parts/182 -H Content-Type: application/json -H Authorization: Bearer <token> -d {"part_name":"Loa ngoai demo v2","unit_price":135000}
+{"part_code":"LK-DEMO-27066","part_id":182,"part_name":"Loa ngoai demo v2","unit_price":135000}
+
+HTTP 200
+
+$ curl -XPATCH localhost:5000/api/stock/182 -H Content-Type: application/json -H Authorization: Bearer <token> -d {"min_threshold":6}
+{"center_id":1,"min_threshold":6,"part_id":182,"quantity":0}
+
+HTTP 200
+
+=== 4. NGOAI LE
+$ curl -XPOST localhost:5000/api/parts -H Content-Type: application/json -H Authorization: Bearer <token> -d {"part_code":"LK-DEMO-27066","part_name":"Trung ma","unit_price":1}
+{"error":{"code":"PART_CODE_EXISTS","message":"Mã linh kiện LK-DEMO-27066 đã tồn tại"}}
+
+HTTP 409
+
+$ curl -XPOST localhost:5000/api/parts -H Content-Type: application/json -H Authorization: Bearer <token> -d {"part_code":"sai ma!","unit_price":-1}
+{"error":{"code":"VALIDATION_FAILED","fields":{"part_code":"Mã gồm chữ, số, dấu gạch ngang, tối đa 30 ký tự","part_name":"Tên từ 1 đến 120 ký tự","unit_price":"Đơn giá phải là số nguyên từ 0"},"message":"Dữ liệu không hợp lệ"}}
+
+HTTP 400
+
+$ curl -XPOST localhost:5000/api/parts -H Content-Type: application/json -H Authorization: Bearer <token> -d {"part_code":"LK-DEMO-02","part_name":"KTV khong duoc tao","unit_price":1}
+{"error":{"code":"FORBIDDEN","message":"Chỉ quản lý trung tâm được thêm linh kiện"}}
+
+HTTP 403
+
+=== 5. XOA MEM: con ton thi bi chan, het ton thi go duoc
+$ curl -XPOST localhost:5000/api/parts/182/stock-in -H Content-Type: application/json -H Authorization: Bearer <token> -d {"center_id":1,"quantity":3}
+{"center_id":1,"created_at":"2026-10-22T09:32:17.211718+00:00","new_stock":3,"part_id":182,"quantity":3,"transaction_id":4957}
+
+HTTP 201
+
+$ curl -XDELETE localhost:5000/api/stock/182 -H Authorization: Bearer <token>
+{"error":{"code":"STOCK_NOT_EMPTY","message":"Kho còn 3 linh kiện, chưa thể gỡ"}}
+
+HTTP 409
+
+$ curl -XDELETE localhost:5000/api/parts/182 -H Authorization: Bearer <token>
+{"error":{"code":"PART_HAS_STOCK","message":"Linh kiện vẫn còn tồn kho ở trung tâm, chưa thể ngừng sử dụng"}}
+
+HTTP 409
+
+$ curl -XPOST localhost:5000/api/tickets/7724/parts -H Content-Type: application/json -H Authorization: Bearer <token> -d {"part_id":182,"quantity":3}
+{"created_at":"2026-10-22T09:32:18.423658+00:00","low_stock_alert":true,"part_id":182,"quantity":3,"remaining_stock":0,"ticket_id":7724,"transaction_id":4958}
+
+HTTP 201
+
+$ curl -XDELETE localhost:5000/api/stock/182 -H Authorization: Bearer <token>
+{"center_id":1,"is_active":false,"part_id":182}
+
+HTTP 200
+
+$ curl -XDELETE localhost:5000/api/parts/182 -H Authorization: Bearer <token>
+{"is_active":false,"part_id":182}
+
+HTTP 200
+
+$ curl localhost:5000/api/parts/182 -H Authorization: Bearer <token>
+{"error":{"code":"PART_NOT_FOUND","message":"Không tìm thấy linh kiện 182"}}
+
+HTTP 404
+
