@@ -4,11 +4,13 @@ Flask cũng phục vụ thư mục web/ (frontend JS thuần) cùng một origin
 nên trình duyệt không gặp lỗi CORS và chỉ cần một lệnh để chạy cả hệ thống.
 """
 import logging
+import os
 import uuid
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
+import psycopg
 from flask import Flask, g, jsonify, request, send_from_directory
 from werkzeug.exceptions import HTTPException
 
@@ -19,6 +21,9 @@ from src.routes.api import build_api, loi_json
 from src.services.stock_service import StockService
 
 WEB = Path(__file__).resolve().parent.parent / 'web'
+logging.basicConfig(
+    level=os.getenv('LOG_LEVEL', 'INFO'),
+    format='%(asctime)s %(levelname)s %(name)s %(message)s')
 log = logging.getLogger('l5')
 
 
@@ -50,7 +55,17 @@ def create_app(service=None):
 
     @app.errorhandler(AppError)
     def loi_nghiep_vu(e):
+        # Lỗi nghiệp vụ là việc bình thường, chỉ ghi INFO kèm mã lỗi và requestId, không kèm dữ liệu cá nhân.
+        log.info('vi pham quy tac code=%s requestId=%s', e.code, g.get('request_id'))
         return loi_json(e)
+
+    @app.errorhandler(psycopg.OperationalError)
+    def loi_mat_ket_noi_csdl(e):
+        # Lỗi hạ tầng: ghi ERROR một lần ở đây (kèm ngăn xếp), người dùng chỉ nhận mã tra cứu.
+        log.exception('mat ket noi CSDL requestId=%s', g.get('request_id'))
+        return jsonify(error={'code': 'DB_UNAVAILABLE',
+                              'message': 'Hệ thống đang gặp sự cố kết nối dữ liệu. Vui lòng thử lại sau.',
+                              'requestId': g.get('request_id')}), 503
 
     @app.errorhandler(HTTPException)
     def loi_http(e):
