@@ -27,6 +27,23 @@ CRUD linh kiện và tồn kho (buổi 10, xem TD-12), chỉ vai trò quản lý
 
 Bản ghi chạy thật các endpoint này nằm ở `docs/export/curl-crud-linh-kien.txt`.
 
+### Truy vết từng endpoint về User Story
+
+| Endpoint | User Story | Ghi chú |
+|---|---|---|
+| `GET /api/parts` | US1 | Tra cứu theo mã hoặc tên, giới hạn trong trung tâm của người dùng |
+| `GET /api/parts/low-stock` | US6 | Danh sách dưới ngưỡng cảnh báo |
+| `POST /api/tickets/{id}/parts` | US2, US3, US4 | Xuất kho; từ chối vượt tồn (QT-09); cờ `low_stock_alert` là cảnh báo của US4 |
+| `GET /api/tickets`, `GET /api/tickets/{id}/parts` | US2 | Chọn phiếu đang xử lý và xem linh kiện đã dùng (AC2.2) |
+| `POST /api/parts/{id}/stock-in` | US5 | Chỉ quản lý trung tâm |
+| `GET /api/parts/{id}/transactions`, `.../summary` | US7 | Lịch sử và tổng hợp nhập xuất |
+| `POST /api/auth/login` | không có User Story riêng | Hạ tầng cho QT-14 và NFR3, thêm ở TD-08 |
+| `POST/GET/PUT/DELETE /api/parts`, `POST/PATCH/DELETE /api/stock` | không có User Story riêng | Thêm để đáp ứng yêu cầu hai thực thể CRUD của BT2 (TD-12); phục vụ US1 và US5 vì phải có linh kiện trong kho mới tra cứu và nhập được |
+
+### Hợp đồng dữ liệu phía giao diện
+
+Phản hồi được dựng bằng các hàm `to_*_view` trong `src/routes/views.py`; mỗi hàm ghi rõ hình dạng, ý nghĩa và hành vi khi dữ liệu thiếu. Hai điểm hay nhầm: `stock` trong `GET /api/parts/{id}` là `null` khi linh kiện chưa có trong kho trung tâm (khác với tồn bằng 0); `ticket_id` trong lịch sử là `null` với giao dịch nhập. Mọi phản hồi có header `X-Request-Id` để tra log; lỗi 5xx kèm `requestId` trong thân.
+
 ## A2. Quy ước chung
 
 - Định dạng trao đổi: JSON, mã hoá UTF-8. Header bắt buộc: `Content-Type: application/json`.
