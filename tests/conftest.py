@@ -1,5 +1,6 @@
 """Repository giả lưu trong bộ nhớ: test nghiệp vụ và API không cần PostgreSQL."""
 import datetime
+from decimal import Decimal
 from contextlib import contextmanager
 
 import pytest
@@ -32,7 +33,7 @@ class KhoGia:
                               'part_name': 'Màn hình iPhone 13', 'unit_price': 2500000,
                               'is_active': True},
                          46: {'part_id': 46, 'part_code': 'PIN-SS-01', 'part_name': 'Pin Samsung',
-                              'unit_price': 300000, 'is_active': True}}
+                              'unit_price': Decimal('300000'), 'is_active': True}}
         self.giao_dich = []
         self.da_commit = 0
         # Repository giả dùng chung một đối tượng cho tiện.
