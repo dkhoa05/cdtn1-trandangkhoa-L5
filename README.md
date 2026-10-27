@@ -16,23 +16,22 @@ phiếu rồi mới biết hết linh kiện, phải hẹn lại khách).
 
 ## 2. Yêu cầu môi trường
 - Python 3.10 trở lên
-- PostgreSQL 16 trở lên (đã chạy thử trên PostgreSQL 18)
+- PostgreSQL 16 trở lên đang chạy (đã chạy thử trên PostgreSQL 18); người dùng PostgreSQL có quyền tạo CSDL, nếu không thì tạo sẵn CSDL tên `cdtn1_l5_dev` bằng pgAdmin
+- Môi trường ảo Python, tạo một lần trước khi chạy các bước ở mục 3: `python -m venv venv` rồi `venv\Scripts\activate`
 - Biến môi trường: xem .env.example
 
 Track SE gợi ý Node/Express hoặc Spring Boot, nhưng tôi chọn Python/Flask vì đã quen Python,
 đỡ mất thời gian học ngôn ngữ mới mà tập trung được vào nghiệp vụ.
 
 ## 3. Hướng dẫn chạy
-Chạy lần lượt từng lệnh trong thư mục gốc của repo (PowerShell trên Windows). Bước 5 yêu cầu PostgreSQL đang chạy.
+Bốn bước, mỗi bước một lệnh, chạy trong thư mục gốc của repo sau khi đã bật môi trường ảo ở mục 2.
 
-1. `python -m venv venv`
-2. `venv\Scriptsctivate`
-3. `pip install -r requirements.txt`
-4. `copy .env.example .env` rồi mở `.env` điền `DB_PASSWORD` của PostgreSQL
-5. `psql -U postgres -c "CREATE DATABASE cdtn1_l5_dev;"`
-6. `python -m src.db_init` (tạo bảng và nạp dữ liệu mẫu, chạy lại lần hai không lỗi)
-7. `python -m src.app`
-8. Mở http://localhost:5000, đăng nhập bằng mã người dùng `2` (kỹ thuật viên trung tâm Ninh Kiều) hoặc `101` (quản lý trung tâm Quận 10). Kiểm tra backend: http://localhost:5000/health trả `{"db":"ok","status":"ok"}`.
+1. `copy .env.example .env` rồi mở `.env` điền `DB_PASSWORD` (và `DB_USER` nếu khác `postgres`)
+2. `pip install -r requirements.txt`
+3. `python -m src.db_init` (tự tạo CSDL nếu chưa có, tạo bảng và nạp dữ liệu mẫu; chạy lại lần hai không lỗi)
+4. `python -m src.app`
+
+Kiểm tra hệ thống chạy đúng: mở http://localhost:5000/health phải trả `{"db":"ok","status":"ok"}`; mở http://localhost:5000 và đăng nhập bằng mã người dùng `2` (kỹ thuật viên trung tâm Ninh Kiều) hoặc `101` (quản lý trung tâm Quận 10).
 
 Nếu mỗi request mất vài giây trên Windows, đặt `DB_HOST=127.0.0.1` trong `.env` (tên `localhost` có thể được thử bằng IPv6 trước).
 
