@@ -53,11 +53,11 @@ Biến môi trường (xem `.env.example`): `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB
 - tests/: bộ kiểm thử
 
 ## 5. Kiểm thử
-Kiểm thử tích hợp trên PostgreSQL thật (ngắt lỗi giữa chừng, tám luồng xuất đồng thời) mặc định bị bỏ qua; chạy bằng `$env:RUN_PG_TESTS="1"; pytest tests/test_tich_hop_pg.py` sau khi đã chạy `python -m src.db_init`.
+Kiểm thử tích hợp trên PostgreSQL thật (ngắt lỗi giữa chừng 1.000 lần, tám luồng xuất đồng thời) mặc định bị bỏ qua; chạy bằng `$env:RUN_PG_TESTS="1"; pytest tests/test_tich_hop_pg.py` sau khi đã chạy `python -m src.db_init`. Hai kiểm thử này mất khoảng một phút và tự xóa dữ liệu chúng tạo, nên chạy nhiều lần không làm đầy CSDL.
 
-`pytest` chạy 32 test, không cần PostgreSQL (dùng repository giả), gồm ba loại: luồng đúng, giá trị biên (xuất đúng bằng tồn, vượt tồn 1 đơn vị, tồn bằng ngưỡng), dữ liệu sai và kiểm soát truy cập theo trung tâm.
+`pytest` chạy 47 test, không cần PostgreSQL (dùng repository giả), gồm ba loại: luồng đúng, giá trị biên (xuất đúng bằng tồn, vượt tồn 1 đơn vị, tồn bằng ngưỡng), dữ liệu sai và kiểm soát truy cập theo trung tâm.
 
-## 6. Trạng thái hiện tại (buổi 10)
+## 6. Trạng thái hiện tại
 - [x] Điều chỉnh thiết kế theo phản hồi BT1 (docs/thay-doi-thiet-ke.md)
 - [x] Khung src/ theo sơ đồ kiến trúc, requirements.txt khóa phiên bản, /health
 - [x] Migration và dữ liệu mẫu
@@ -66,6 +66,6 @@ Kiểm thử tích hợp trên PostgreSQL thật (ngắt lỗi giữa chừng, t
 - [x] 32 kiểm thử thuộc ba loại, cộng 2 kiểm thử tích hợp PostgreSQL (NFR2)
 - [x] Màn hình M1, M2, M3 gọi API thật, có trạng thái đang tải, rỗng, lỗi
 - [x] CRUD linh kiện và tồn kho (xóa mềm, migration 002), màn hình M4 Danh mục
-- [x] Kiểm thử ngắt lỗi giữa chừng và xuất đồng thời (TD-02, TD-15)
+- [x] Kiểm thử ngắt lỗi giữa chừng và xuất đồng thời (TD-02)
 
 Ảnh chạy toàn luồng trên dữ liệu mẫu thật: docs/export/e2e-*.png. Bản ghi gọi API bằng curl: docs/export/curl-crud-linh-kien.txt.

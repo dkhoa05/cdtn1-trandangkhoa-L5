@@ -11,9 +11,9 @@
 | GET | `/api/parts/{part_id}/transactions?center_id={id}` | Lịch sử chi tiết từng giao dịch nhập–xuất của một linh kiện | US7 |
 | GET | `/api/parts/{part_id}/transactions/summary?center_id={id}&from={date}&to={date}` | Tổng nhập, tổng xuất của linh kiện trong khoảng thời gian | US7 |
 
-Bổ sung ở buổi 10 (xem TD-08): `POST /api/auth/login` (body `{"user_id": 2}`, trả `{"token", "user"}`), `GET /api/tickets?status=DANG_XU_LY` (phiếu của trung tâm người dùng), `GET /api/tickets/{ticket_id}/parts` (linh kiện đã xuất cho phiếu, AC2.2). Mọi endpoint còn lại đòi header `Authorization: Bearer <token>`; thiếu hoặc sai token trả 401.
+Bổ sung ở buổi 10 (xem TD-05): `POST /api/auth/login` (body `{"user_id": 2}`, trả `{"token", "user"}`), `GET /api/tickets?status=DANG_XU_LY` (phiếu của trung tâm người dùng), `GET /api/tickets/{ticket_id}/parts` (linh kiện đã xuất cho phiếu, AC2.2). Mọi endpoint còn lại đòi header `Authorization: Bearer <token>`; thiếu hoặc sai token trả 401.
 
-CRUD linh kiện và tồn kho (buổi 10, xem TD-12), chỉ vai trò quản lý trung tâm được ghi, kỹ thuật viên nhận 403:
+CRUD linh kiện và tồn kho (buổi 10, xem TD-06), chỉ vai trò quản lý trung tâm được ghi, kỹ thuật viên nhận 403:
 
 | Phương thức | Đường dẫn | Mục đích | Mã lỗi chính |
 |---|---|---|---|
@@ -37,8 +37,8 @@ Bản ghi chạy thật các endpoint này nằm ở `docs/export/curl-crud-linh
 | `GET /api/tickets`, `GET /api/tickets/{id}/parts` | US2 | Chọn phiếu đang xử lý và xem linh kiện đã dùng (AC2.2) |
 | `POST /api/parts/{id}/stock-in` | US5 | Chỉ quản lý trung tâm |
 | `GET /api/parts/{id}/transactions`, `.../summary` | US7 | Lịch sử và tổng hợp nhập xuất |
-| `POST /api/auth/login` | không có User Story riêng | Hạ tầng cho QT-14 và NFR3, thêm ở TD-08 |
-| `POST/GET/PUT/DELETE /api/parts`, `POST/PATCH/DELETE /api/stock` | không có User Story riêng | Thêm để đáp ứng yêu cầu hai thực thể CRUD của BT2 (TD-12); phục vụ US1 và US5 vì phải có linh kiện trong kho mới tra cứu và nhập được |
+| `POST /api/auth/login` | không có User Story riêng | Hạ tầng cho QT-14 và NFR3, thêm ở TD-05 |
+| `POST/GET/PUT/DELETE /api/parts`, `POST/PATCH/DELETE /api/stock` | không có User Story riêng | Thêm để đáp ứng yêu cầu hai thực thể CRUD của BT2 (TD-06); phục vụ US1 và US5 vì phải có linh kiện trong kho mới tra cứu và nhập được |
 
 ### Hợp đồng dữ liệu phía giao diện
 

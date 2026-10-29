@@ -11,6 +11,8 @@ Sơ đồ nằm ở docs/architecture.drawio. Tôi chia hệ thống thành 4 l�
 | 3. Truy cập dữ liệu | PartRepository, StockRepository, TransactionRepository, TicketRepository, UserRepository | Chỉ đọc/ghi dữ liệu, không chứa quy tắc | SQL |
 | 4. Lưu trữ | PostgreSQL (migrations/001_init.sql) | Giữ ràng buộc ở mức CSDL: khóa ngoại, NOT NULL, CHECK | Không có |
 
+Bảng trên là thiết kế của Bài tập 1. Bản hiện thực ở Bài tập 2 khác ở hai chỗ: lớp 1 là giao diện JavaScript thuần gọi API chứ không dùng Flask templates (TD-09), và lớp 2 là một StockService duy nhất thay cho ba lớp (TD-08). Sơ đồ theo mã thực tế nằm ở docs/architecture-thuc-te.svg; lý do từng thay đổi nằm ở docs/thay-doi-thiet-ke.md.
+
 Những phần không làm (WON'T): dự báo nhu cầu linh kiện, tự đặt hàng với nhà cung cấp, gửi SMS/email cảnh báo, quản lý giá nhập theo thời gian.
 
 ### 3.2. Ba câu lập luận lựa chọn kiến trúc

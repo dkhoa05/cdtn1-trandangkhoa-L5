@@ -52,7 +52,7 @@ def build_api(service):
 
     @bp.post('/auth/login')
     def dang_nhap():
-        # Chưa có mật khẩu (xem thay-doi-thiet-ke TD-08): đăng nhập chỉ bằng mã người dùng, chỉ phù hợp bản thử nghiệm
+        # Chưa có mật khẩu (xem thay-doi-thiet-ke TD-05): đăng nhập chỉ bằng mã người dùng, chỉ phù hợp bản thử nghiệm
         user_id = v.dang_nhap(request.get_json(silent=True))['user_id']
         user = service.lay_nguoi_dung(user_id)
         return jsonify(token=auth.tao_token(user_id), user={
