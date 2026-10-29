@@ -52,6 +52,8 @@ Biến môi trường (xem `.env.example`): `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB
 - seeds/: dữ liệu mẫu rút từ bộ dữ liệu của case study
 - tests/: bộ kiểm thử
 
+Quy ước đặt tên: tên bảng, cột, đường dẫn API và mã lỗi dùng tiếng Anh theo bảng thuật ngữ mục 1 của SRS (`part`, `part_stock`, `ticket`, `INSUFFICIENT_STOCK`); tên hàm và biến trong mã nghiệp vụ dùng tiếng Việt không dấu (`xuat_linh_kien`, `ton`); thông báo hiển thị cho người dùng viết tiếng Việt có dấu.
+
 ## 5. Kiểm thử
 Kiểm thử tích hợp trên PostgreSQL thật (ngắt lỗi giữa chừng 1.000 lần, tám luồng xuất đồng thời) mặc định bị bỏ qua; chạy bằng `$env:RUN_PG_TESTS="1"; pytest tests/test_tich_hop_pg.py` sau khi đã chạy `python -m src.db_init`. Hai kiểm thử này mất khoảng một phút và tự xóa dữ liệu chúng tạo, nên chạy nhiều lần không làm đầy CSDL.
 
