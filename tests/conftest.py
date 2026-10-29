@@ -97,7 +97,9 @@ class KhoGia:
     def tim_theo_ma(self, part_code):
         return next((p for p in self.danh_muc.values() if p['part_code'] == part_code), None)
 
-    def tim_linh_kien_trong_kho(self, center_id, q, chi_duoi_nguong, limit, offset):
+    def tim_linh_kien_trong_kho(self, center_id, q, trang_thai, sap_xep, limit, offset):
+        self.lan_tim_cuoi = {'center_id': center_id, 'q': q, 'trang_thai': trang_thai,
+                             'sap_xep': sap_xep, 'limit': limit, 'offset': offset}
         return [], 0
 
     def tao_linh_kien(self, part_code, part_name, unit_price):

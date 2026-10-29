@@ -92,3 +92,23 @@ def test_nhieu_giao_dich_xuat_dong_thoi_chi_mot_thanh_cong(ctx):
     assert sorted(ket_qua) == ['INSUFFICIENT_STOCK'] * (SO_LUONG - 1) + ['ok']
     assert _ton(quan_ly, part_id) == 0                    # không âm, không xuất đôi
     assert _so_giao_dich(part_id, 'XUAT') == 1
+
+
+def test_loc_tinh_trang_ton_va_sap_xep_tren_du_lieu_that():
+    """Chỉ đọc dữ liệu mẫu, không ghi gì. Kiểm các quan hệ phải đúng với mọi dữ liệu thay vì so với con số cụ thể."""
+    service = StockService(stock_repo.unit_of_work)
+    ky_thuat = service.lay_nguoi_dung(2)
+
+    def tim(trang_thai, sap_xep='code'):
+        return service.tim_linh_kien(ky_thuat, None, None, 1, 100, trang_thai, sap_xep)
+
+    tat_ca, thap, het, du = (tim(t) for t in ('all', 'low', 'out', 'ok'))
+    assert all(p['quantity'] == 0 for p in het['data'])
+    assert all(p['quantity'] < p['min_threshold'] for p in thap['data'])
+    assert all(p['quantity'] >= p['min_threshold'] for p in du['data'])
+    # hết hàng mà có ngưỡng lớn hơn 0 thì cũng là dưới ngưỡng (ngưỡng 0 thì tồn 0 chưa phải "thấp hơn ngưỡng")
+    assert {p['part_id'] for p in het['data'] if p['min_threshold'] > 0} <= {p['part_id'] for p in thap['data']}
+    assert thap['total'] + du['total'] == tat_ca['total']                              # low và ok chia đôi toàn bộ kho
+    tang = [p['quantity'] for p in tim('all', 'qty_asc')['data']]
+    giam = [p['quantity'] for p in tim('all', 'qty_desc')['data']]
+    assert tang == sorted(tang) and giam == sorted(giam, reverse=True)

@@ -83,3 +83,29 @@ def test_mat_ket_noi_csdl_tra_503_kem_ma_tra_cuu(dang_nhap_token):
     assert loi['code'] == 'DB_UNAVAILABLE'
     assert loi['requestId']
     assert 'refused' not in r.get_data(as_text=True)      # không lộ chi tiết kỹ thuật
+
+
+def test_loc_tinh_trang_ton_va_sap_xep_duoc_chuyen_xuong_tang_du_lieu(client, dang_nhap, kho):
+    r = client.get('/api/parts?q=man&status=out&sort=qty_asc&size=5', headers=dang_nhap(2))
+    assert r.status_code == 200
+    assert kho.lan_tim_cuoi == {'center_id': 1, 'q': 'man', 'trang_thai': 'out',
+                                'sap_xep': 'qty_asc', 'limit': 5, 'offset': 0}
+
+
+def test_khong_truyen_bo_loc_thi_dung_mac_dinh_tat_ca_sap_theo_ma(client, dang_nhap, kho):
+    client.get('/api/parts', headers=dang_nhap(2))
+    assert (kho.lan_tim_cuoi['trang_thai'], kho.lan_tim_cuoi['sap_xep']) == ('all', 'code')
+
+
+def test_bo_loc_sai_gia_tri_tra_400_kem_ten_tham_so(client, dang_nhap):
+    h = dang_nhap(2)
+    for url, truong in (('/api/parts?status=het', 'status'), ('/api/parts?sort=gia', 'sort'),
+                        ('/api/parts/low-stock?sort=1; DROP TABLE part', 'sort')):
+        r = client.get(url, headers=h)
+        assert r.status_code == 400, url
+        assert truong in r.get_json()['error']['fields']
+
+
+def test_low_stock_luon_la_trang_thai_low_va_van_loc_theo_tu_khoa(client, dang_nhap, kho):
+    client.get('/api/parts/low-stock?q=pin&status=ok', headers=dang_nhap(2))
+    assert kho.lan_tim_cuoi['trang_thai'] == 'low' and kho.lan_tim_cuoi['q'] == 'pin'

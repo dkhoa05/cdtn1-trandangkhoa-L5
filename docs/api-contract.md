@@ -102,7 +102,19 @@ Xuất linh kiện cho phiếu bảo hành (US2, US3, UC2, QT-09).
 
 ## A4. GET /api/parts
 
-Tra cứu / tìm kiếm linh kiện (US1, UC1).
+Tra cứu / tìm kiếm linh kiện (US1, UC1), có lọc theo tình trạng tồn và sắp xếp.
+
+**Tham số query** (đều không bắt buộc):
+
+| Tham số | Giá trị | Ý nghĩa |
+|---|---|---|
+| q | chuỗi | Lọc theo mã hoặc tên linh kiện, không phân biệt hoa thường |
+| status | `all` (mặc định), `low`, `out`, `ok` | Tình trạng tồn: `all` là tất cả; `low` là tồn thấp hơn ngưỡng cảnh báo; `out` là hết hàng (tồn 0); `ok` là tồn không thấp hơn ngưỡng. Hết hàng mà ngưỡng lớn hơn 0 cũng thuộc `low` |
+| sort | `code` (mặc định), `name`, `qty_asc`, `qty_desc` | Sắp theo mã, theo tên, tồn thấp trước hoặc tồn cao trước |
+| page, size | số nguyên dương | Phân trang, mặc định 1 và 20; `size` tối đa 100 |
+| center_id | số nguyên dương | Phải trùng trung tâm của người dùng đăng nhập (QT-14) |
+
+`GET /api/parts/low-stock` tương đương `status=low`, nhận thêm `q` và `sort`.
 
 **RESPONSE 200 OK**
 ```json
@@ -121,6 +133,8 @@ Tra cứu / tìm kiếm linh kiện (US1, UC1).
   "total": 1
 }
 ```
+
+**RESPONSE 400 Bad Request**: `status` hoặc `sort` không nằm trong danh sách cho phép, body lỗi có tên tham số sai trong `fields`  
 
 **RESPONSE 403 Forbidden**: `center_id` trong query không khớp trung tâm của người dùng đăng nhập (QT-14)  
 

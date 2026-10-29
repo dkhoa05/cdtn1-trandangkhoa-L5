@@ -44,16 +44,17 @@ class StockService:
         return {'data': rows, 'page': page, 'size': size, 'total': total}
 
     # ---- FR1, FR6 ----
-    def tim_linh_kien(self, user, center_id, q, page, size, chi_duoi_nguong=False):
+    def tim_linh_kien(self, user, center_id, q, page, size, trang_thai='all', sap_xep='code'):
         """Tra cứu tồn kho linh kiện của trung tâm, theo mã hoặc tên, có thể chỉ lấy dưới ngưỡng (FR1, FR6, QT-14).
 
-        Nhận: user; center_id: None hoặc trung tâm của user; q: từ khóa hoặc None; page, size: phân trang; chi_duoi_nguong: bool.
+        Nhận: user; center_id: None hoặc trung tâm của user; q: từ khóa hoặc None; page, size: phân trang; trang_thai: all, low, out hoặc ok; sap_xep: code, name, qty_asc hoặc qty_desc.
         Trả: dict {data, page, size, total}; data rỗng khi không có linh kiện khớp (không phải lỗi).
         Lỗi: FORBIDDEN khi center_id khác trung tâm của user.
         """
         trung_tam = self._trung_tam(user, center_id)
         with self.uow() as r:
-            rows, total = r.parts.tim_linh_kien_trong_kho(trung_tam, q, chi_duoi_nguong, size, (page - 1) * size)
+            rows, total = r.parts.tim_linh_kien_trong_kho(
+                trung_tam, q, trang_thai, sap_xep, size, (page - 1) * size)
         return self._trang(rows, total, page, size)
 
     # ---- FR2, FR3, FR4: xuất linh kiện cho phiếu (QT-09) ----

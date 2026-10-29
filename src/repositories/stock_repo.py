@@ -30,27 +30,35 @@ class UserRepository:
                WHERE u.user_id = %s""", (user_id,)).fetchone()
 
 
+# Điều kiện lọc và thứ tự sắp xếp là hằng số của repository: giá trị người dùng gửi lên chỉ để CHỌN khóa trong hai
+# bảng này (validator đã giới hạn), không bao giờ được nối vào câu SQL.
+_LOC_TON = {'all': 'TRUE', 'low': 's.quantity < s.min_threshold', 'out': 's.quantity = 0',
+            'ok': 's.quantity >= s.min_threshold'}
+_SAP_XEP = {'code': 'p.part_code', 'name': 'p.part_name, p.part_code',
+            'qty_asc': 's.quantity, p.part_code', 'qty_desc': 's.quantity DESC, p.part_code'}
+
+
 class PartRepository:
     def __init__(self, conn):
         self.conn = conn
 
-    def tim_linh_kien_trong_kho(self, center_id, q, chi_duoi_nguong, limit, offset):
+    def tim_linh_kien_trong_kho(self, center_id, q, trang_thai, sap_xep, limit, offset):
         """Làm gì: tìm linh kiện đang dùng trong kho của một trung tâm, theo mã hoặc tên, sắp theo mã.
-        Nhận: q rỗng nghĩa là không lọc; chi_duoi_nguong=True chỉ lấy linh kiện tồn dưới ngưỡng.
+        Nhận: q rỗng nghĩa là không lọc theo từ khóa; trang_thai: all, low (tồn dưới ngưỡng; hết hàng cũng thuộc nhóm này
+        khi ngưỡng lớn hơn 0), out (tồn bằng 0) hoặc ok (tồn không thấp hơn ngưỡng); sap_xep: code, name, qty_asc hoặc qty_desc.
         Trả: (danh sách dòng, tổng số dòng khớp). Lỗi: không có."""
         mau = f'%{_escape_like(q)}%' if q else None
         rows = self.conn.execute(
-            """SELECT p.part_id, p.part_code, p.part_name, p.unit_price, s.quantity, s.min_threshold,
+            f"""SELECT p.part_id, p.part_code, p.part_name, p.unit_price, s.quantity, s.min_threshold,
                       COUNT(*) OVER () AS total
                FROM part_stock s JOIN part p USING (part_id)
                WHERE s.center_id = %(c)s AND s.is_active AND p.is_active
                  AND (%(mau)s::text IS NULL
                       OR p.part_code ILIKE %(mau)s OR p.part_name ILIKE %(mau)s)
-                 AND (NOT %(low)s OR s.quantity < s.min_threshold)
-               ORDER BY p.part_code
+                 AND {_LOC_TON[trang_thai]}
+               ORDER BY {_SAP_XEP[sap_xep]}
                LIMIT %(limit)s OFFSET %(offset)s""",
-            {'c': center_id, 'mau': mau, 'low': chi_duoi_nguong,
-             'limit': limit, 'offset': offset}).fetchall()
+            {'c': center_id, 'mau': mau, 'limit': limit, 'offset': offset}).fetchall()
         return _tach_total(rows)
 
     def lay_linh_kien(self, part_id):

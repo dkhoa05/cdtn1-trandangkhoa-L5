@@ -79,6 +79,29 @@ def phan_trang(args):
     return kq['page'], kq['size']
 
 
+# Tình trạng tồn và cách sắp xếp mà GET /api/parts cho phép; giá trị khác bị từ chối chứ không đưa vào SQL
+TRANG_THAI_TON = ('all', 'low', 'out', 'ok')
+SAP_XEP = ('code', 'name', 'qty_asc', 'qty_desc')
+
+
+def loc_ton_kho(args):
+    """Làm gì: đọc status (tình trạng tồn: all, low, out, ok) và sort (code, name, qty_asc, qty_desc) từ query string.
+    Nhận: request.args. Trả: (trang_thai, sap_xep), mặc định ('all', 'code'); tham số vắng hoặc rỗng dùng mặc định.
+    Lỗi: VALIDATION_FAILED, kèm tên tham số sai, nếu giá trị không nằm trong danh sách cho phép."""
+    fields, kq = {}, {}
+    for ten, cho_phep, mac_dinh in (('status', TRANG_THAI_TON, 'all'), ('sort', SAP_XEP, 'code')):
+        tho = args.get(ten)
+        if tho is None or tho == '':
+            kq[ten] = mac_dinh
+        elif tho in cho_phep:
+            kq[ten] = tho
+        else:
+            fields[ten] = 'Chỉ nhận một trong: ' + ', '.join(cho_phep)
+    if fields:
+        raise _loi(fields)
+    return kq['status'], kq['sort']
+
+
 def so_nguyen_tuy_chon(args, ten):
     """Đọc một tham số số nguyên dương không bắt buộc. Trả None nếu vắng mặt hoặc rỗng; VALIDATION_FAILED nếu có mà sai."""
     tho = args.get(ten)

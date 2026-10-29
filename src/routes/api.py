@@ -62,17 +62,21 @@ def build_api(service):
     @can_dang_nhap
     def tim_linh_kien():
         page, size = v.phan_trang(request.args)
+        trang_thai, sap_xep = v.loc_ton_kho(request.args)
         return jsonify(hd.to_page_view(service.tim_linh_kien(
             g.user, v.so_nguyen_tuy_chon(request.args, 'center_id'),
-            (request.args.get('q') or '').strip() or None, page, size), hd.to_part_stock_view))
+            (request.args.get('q') or '').strip() or None, page, size, trang_thai, sap_xep),
+            hd.to_part_stock_view))
 
     @bp.get('/parts/low-stock')
     @can_dang_nhap
     def duoi_nguong():
         page, size = v.phan_trang(request.args)
+        _, sap_xep = v.loc_ton_kho(request.args)          # endpoint này luôn là trạng thái low; chỉ nhận thêm sort
         return jsonify(hd.to_page_view(service.tim_linh_kien(
-            g.user, v.so_nguyen_tuy_chon(request.args, 'center_id'), None, page, size,
-            chi_duoi_nguong=True), hd.to_part_stock_view))
+            g.user, v.so_nguyen_tuy_chon(request.args, 'center_id'),
+            (request.args.get('q') or '').strip() or None, page, size, 'low', sap_xep),
+            hd.to_part_stock_view))
 
     @bp.post('/parts')
     @can_dang_nhap
