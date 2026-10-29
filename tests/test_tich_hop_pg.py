@@ -2,7 +2,8 @@
 
 Mặc định BỎ QUA để bộ kiểm thử chính không phụ thuộc cơ sở dữ liệu có sẵn. Chạy bằng:
     PowerShell:  $env:RUN_PG_TESTS="1"; pytest tests/test_tich_hop_pg.py
-Cần CSDL đã chạy `python -m src.db_init`; mỗi test tự tạo linh kiện riêng và ngừng sử dụng khi xong.
+Cần CSDL đã chạy `python -m src.db_init`; mỗi test tự tạo linh kiện riêng và xóa hẳn nó (cùng tồn kho và giao dịch) khi xong,
+nên chạy bao nhiêu lần cũng không để dòng thừa trong CSDL.
 """
 import os
 import threading
@@ -29,14 +30,13 @@ def ctx():
     part = service.tao_linh_kien(quan_ly, 'IT-' + uuid.uuid4().hex[:10], 'Linh kiện kiểm thử tích hợp', 1000)
     service.them_vao_kho(quan_ly, part['part_id'], 0)
     yield service, quan_ly, phieu, part['part_id']
-    # Dọn: đưa tồn về 0 rồi ngừng sử dụng (xóa mềm, giữ nguyên lịch sử giao dịch, QT-13).
+    # Dọn bằng xóa thật (không xóa mềm): dữ liệu này chỉ của test, không có lịch sử nào cần giữ,
+    # và xóa mềm sẽ làm CSDL dev đầy linh kiện thừa sau mỗi lần chạy.
     with db.connect() as conn:
-        ton = conn.execute('SELECT quantity FROM part_stock WHERE center_id = %s AND part_id = %s',
-                           (quan_ly['center_id'], part['part_id'])).fetchone()
-    if ton and ton['quantity'] > 0:
-        service.xuat_linh_kien(quan_ly, phieu, part['part_id'], ton['quantity'])
-    service.ngung_ton_kho(quan_ly, part['part_id'])
-    service.ngung_linh_kien(quan_ly, part['part_id'])
+        pid = part['part_id']
+        conn.execute('DELETE FROM part_transaction WHERE part_id = %s', (pid,))
+        conn.execute('DELETE FROM part_stock WHERE part_id = %s', (pid,))
+        conn.execute('DELETE FROM part WHERE part_id = %s', (pid,))
 
 
 def _ton(quan_ly, part_id):
@@ -51,12 +51,15 @@ def _so_giao_dich(part_id, loai):
                             (part_id, loai)).fetchone()['n']
 
 
+SO_LAN_NGAT = 1000                                        # đúng ngưỡng NFR2 trong srs.md mục 4
+
+
 def test_ngat_loi_giua_chung_khong_de_ton_kho_lech_voi_log(ctx, monkeypatch):
     service, quan_ly, phieu, part_id = ctx
     service.nhap_kho(quan_ly, part_id, quan_ly['center_id'], 5)
-    for _ in range(50):                                   # lặp: lỗi xảy ra sau khi đã trừ tồn nhưng trước khi ghi log
-        monkeypatch.setattr(stock_repo.TransactionRepository, 'them',
-                            lambda *a, **k: (_ for _ in ()).throw(RuntimeError('ngắt giữa chừng')))
+    monkeypatch.setattr(stock_repo.TransactionRepository, 'them',
+                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError('ngắt giữa chừng')))
+    for _ in range(SO_LAN_NGAT):                          # lỗi xảy ra sau khi đã trừ tồn nhưng trước khi ghi log
         with pytest.raises(RuntimeError):
             service.xuat_linh_kien(quan_ly, phieu, part_id, 1)
     monkeypatch.undo()
