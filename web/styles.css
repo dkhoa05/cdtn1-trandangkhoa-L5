@@ -110,7 +110,7 @@ tbody tr:hover { background: var(--chinh-nhat); }
 .nhan-het { color: var(--loi); background: var(--loi-nen); }
 
 /* Thông báo: có nhãn chữ ở đầu nên không chỉ dựa vào màu */
-.tb { padding: 12px 16px; border-radius: var(--goc); margin: 16px 0; border-left: 4px solid currentColor; color: var(--chu); }
+.tb { padding: 12px 16px; border-radius: var(--goc); margin: 16px 0; border: 1px solid var(--vien-dam); color: var(--chu); }
 .tb::before { font-weight: 700; }
 .tb-ok { border-color: var(--ok); background: var(--ok-nen); } .tb-ok::before { content: "Thành công: "; color: var(--ok); }
 .tb-canhbao { border-color: var(--canhbao); background: var(--canhbao-nen); } .tb-canhbao::before { content: "Lưu ý: "; color: var(--canhbao); }
@@ -122,7 +122,7 @@ tbody tr:hover { background: var(--chinh-nhat); }
 .ds-rong { text-align: center; padding: 32px 16px; border: 1px dashed var(--vien-dam); border-radius: var(--goc); }
 .ds-rong p { margin: 0 0 12px; }
 .ds-loi { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; padding: 16px; color: var(--chu); background: var(--loi-nen);
-  border-left: 4px solid var(--loi); border-radius: var(--goc); }
+  border: 1px solid var(--loi); border-radius: var(--goc); }
 .ds-loi p { margin: 0; }
 .ds-tai p { margin: 0 0 12px; }
 .xuong { height: 14px; margin-bottom: 12px; border-radius: 4px; background: var(--vien); animation: nhap-nhay 1.4s ease-in-out infinite; }
