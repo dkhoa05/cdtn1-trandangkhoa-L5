@@ -2,13 +2,17 @@ import { timLinhKien } from '../api/parts.api.js';
 import { DataState } from './DataState.js';
 import { h } from './dom.js';
 
-/** Ô lọc theo mã/tên + danh sách chọn linh kiện của trung tâm. Gọi onChange(part|null). */
-export function PartPicker(onChange) {
+/**
+ * Ô lọc theo mã/tên + danh sách chọn linh kiện của trung tâm. Gọi onChange(part|null).
+ * idChon là id của ô chọn: trang đặt <label for=idChon> để ô chọn có nhãn hiện sẵn cho người dùng và trình đọc màn hình.
+ */
+export function PartPicker(onChange, { idChon = 'linh-kien' } = {}) {
   let q = '';
   let hen;
   const cho = h('div');
   const o = h('input', {
-    type: 'search', placeholder: 'Lọc theo mã hoặc tên linh kiện', 'aria-label': 'Lọc linh kiện',
+    id: `${idChon}-loc`, type: 'search', placeholder: 'Gõ mã hoặc tên để thu hẹp danh sách', autocomplete: 'off',
+    'aria-label': 'Lọc danh sách linh kiện',
     oninput: (e) => {
       // Chờ 250 ms sau lần gõ cuối mới gọi API, để gõ "ABC" chỉ tốn một lần gọi thay vì ba
       clearTimeout(hen);
@@ -30,7 +34,7 @@ export function PartPicker(onChange) {
       : null),
     veKhiCoDuLieu: (d) => {
       const chon = h('select', {
-        'aria-label': 'Linh kiện',
+        id: idChon,
         onchange: (e) => onChange(d.data.find((p) => String(p.part_id) === e.target.value) || null),
       }, h('option', { value: '' }, '— Chọn linh kiện —'),
       d.data.map((p) => h('option', { value: p.part_id },

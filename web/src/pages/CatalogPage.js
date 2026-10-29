@@ -3,7 +3,7 @@ import {
   doiNguong, ngungLinhKien, ngungTonKho, suaLinhKien, taoLinhKien, themVaoKho, timLinhKien,
 } from '../api/parts.api.js';
 import { DataState } from '../components/DataState.js';
-import { h, thongBao } from '../components/dom.js';
+import { bangCuon, h, thongBao } from '../components/dom.js';
 
 const dinhDangGia = (v) => Number(v).toLocaleString('vi-VN') + ' đ';
 
@@ -51,9 +51,10 @@ export function CatalogPage(goc, { nguoiDung }) {
     veKhiCoDuLieu: (d) => {
       const tongTrang = Math.max(1, Math.ceil(d.total / d.size));
       return h('div', {},
-        h('table', {},
+        bangCuon('Bảng danh mục linh kiện', h('table', {},
+          h('caption', { class: 'chi-doc' }, 'Danh mục linh kiện trong kho trung tâm'),
           h('thead', {}, h('tr', {}, ['Mã', 'Tên linh kiện', 'Đơn giá', 'Tồn', 'Ngưỡng', 'Thao tác']
-            .map((t) => h('th', { scope: 'col' }, t)))),
+            .map((t, i) => h('th', { scope: 'col', class: i >= 2 && i <= 4 ? 'so' : null }, t)))),
           h('tbody', {}, d.data.map((p) => h('tr', {},
             h('td', {}, p.part_code), h('td', {}, p.part_name),
             h('td', { class: 'so' }, dinhDangGia(p.unit_price)),
@@ -61,15 +62,15 @@ export function CatalogPage(goc, { nguoiDung }) {
             h('td', { class: 'thao-tac' },
               h('button', { type: 'button', class: 'phu', onclick: () => { dangSua = p; veForm(); } }, 'Sửa'),
               h('button', {
-                type: 'button', class: 'phu',
+                type: 'button', class: 'phu nguy',
                 onclick: () => confirm(`Gỡ ${p.part_code} khỏi kho trung tâm?`)
                   && thucHien(() => ngungTonKho(p.part_id), `Đã gỡ ${p.part_code} khỏi kho.`),
               }, 'Gỡ khỏi kho'),
               h('button', {
-                type: 'button', class: 'phu',
+                type: 'button', class: 'phu nguy',
                 onclick: () => confirm(`Ngừng sử dụng ${p.part_code} trong toàn hệ thống?`)
                   && thucHien(() => ngungLinhKien(p.part_id), `Đã ngừng sử dụng ${p.part_code}.`),
-              }, 'Ngừng sử dụng')))))),
+              }, 'Ngừng sử dụng'))))))),
         h('div', { class: 'phan-trang' },
           h('button', { type: 'button', disabled: page <= 1, onclick: () => { page--; ds.taiLai(); } }, 'Trước'),
           h('span', {}, `Trang ${d.page}/${tongTrang} · ${d.total} linh kiện`),
@@ -101,10 +102,10 @@ export function CatalogPage(goc, { nguoiDung }) {
       },
     },
     h('h2', {}, sua ? `Sửa linh kiện ${sua.part_code}` : 'Thêm linh kiện mới'),
-    h('label', { for: 'ma' }, 'Mã linh kiện'), ma,
-    h('label', { for: 'ten' }, 'Tên linh kiện'), ten,
-    h('label', { for: 'gia' }, 'Đơn giá (đ)'), gia,
-    h('label', { for: 'nguong' }, 'Ngưỡng cảnh báo'), nguong,
+    h('div', { class: 'truong' }, h('label', { for: 'ma' }, 'Mã linh kiện'), ma),
+    h('div', { class: 'truong' }, h('label', { for: 'ten' }, 'Tên linh kiện'), ten),
+    h('div', { class: 'truong' }, h('label', { for: 'gia' }, 'Đơn giá (đ)'), gia),
+    h('div', { class: 'truong' }, h('label', { for: 'nguong' }, 'Ngưỡng cảnh báo'), nguong),
     h('div', { class: 'hang-nut' },
       h('button', { type: 'submit' }, sua ? 'Lưu thay đổi' : 'Thêm linh kiện'),
       sua && h('button', { type: 'button', class: 'phu', onclick: () => { dangSua = null; veForm(); } }, 'Hủy'))));
@@ -122,11 +123,13 @@ export function CatalogPage(goc, { nguoiDung }) {
     class: 'thanh-loc',
     onsubmit: (e) => { e.preventDefault(); q = e.target.q.value.trim(); page = 1; ds.taiLai(); },
   },
-  h('input', { name: 'q', type: 'search', placeholder: 'Mã hoặc tên linh kiện', 'aria-label': 'Tìm linh kiện' }),
+  h('div', { class: 'truong rong' }, h('label', { for: 'loc-q' }, 'Tìm theo mã hoặc tên'),
+    h('input', { id: 'loc-q', name: 'q', type: 'search', placeholder: 'Mã hoặc tên linh kiện', autocomplete: 'off' })),
   h('button', { type: 'submit' }, 'Tìm'));
 
   goc.replaceChildren(h('section', { class: 'khung' },
-    h('h1', {}, 'Danh mục linh kiện và kho'),
-    h('p', { class: 'ghi-chu' }, `Trung tâm: ${nguoiDung.center_name}. Linh kiện còn tồn không thể ngừng sử dụng; xóa chỉ là xóa mềm.`),
+    h('div', { class: 'trang-dau' },
+      h('h1', {}, 'Danh mục linh kiện và kho'),
+      h('p', { class: 'ghi-chu' }, `Trung tâm: ${nguoiDung.center_name}. Linh kiện còn tồn không thể ngừng sử dụng; xóa chỉ là xóa mềm.`)),
     choForm, khungKetQua, loc, cho));
 }

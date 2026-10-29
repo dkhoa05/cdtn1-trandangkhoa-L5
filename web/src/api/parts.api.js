@@ -3,12 +3,13 @@
 import { goi } from './client.js';
 
 /**
- * Tìm linh kiện trong kho trung tâm theo mã hoặc tên (q), có phân trang.
- * duoiNguong = true chỉ lấy linh kiện có tồn thấp hơn ngưỡng cảnh báo.
+ * Tìm linh kiện trong kho trung tâm theo mã hoặc tên (q), có lọc theo tình trạng tồn, sắp xếp và phân trang.
+ * trangThai: 'all' (mặc định), 'low' (tồn dưới ngưỡng), 'out' (hết hàng, tồn 0) hoặc 'ok' (tồn không thấp hơn ngưỡng).
+ * sapXep: 'code' (mặc định), 'name', 'qty_asc' (tồn thấp trước) hoặc 'qty_desc' (tồn cao trước).
  * Trả: { data: [{ part_id, part_code, part_name, quantity, min_threshold }], total, page, size }; total là tổng số dòng khớp, không phải số dòng của trang.
  */
-export const timLinhKien = ({ q, page = 1, size = 20, duoiNguong = false } = {}) =>
-  goi('GET', duoiNguong ? '/parts/low-stock' : '/parts', { query: { q, page, size } });
+export const timLinhKien = ({ q, page = 1, size = 20, trangThai = 'all', sapXep = 'code' } = {}) =>
+  goi('GET', '/parts', { query: { q, page, size, status: trangThai, sort: sapXep } });
 
 /** Ghi nhận nhập kho (chỉ quản lý). Trả: { quantity, new_stock }. Lỗi 400 nếu số lượng không phải số nguyên dương. */
 export const nhapKho = (partId, centerId, quantity) =>

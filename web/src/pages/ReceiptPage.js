@@ -2,7 +2,7 @@
 import { lichSu, nhapKho, tongHop } from '../api/parts.api.js';
 import { DataState } from '../components/DataState.js';
 import { PartPicker } from '../components/PartPicker.js';
-import { gio, h, thongBao } from '../components/dom.js';
+import { bangCuon, gio, h, thongBao } from '../components/dom.js';
 
 const homNay = () => new Date().toISOString().slice(0, 10);
 const dauThang = () => homNay().slice(0, 8) + '01';
@@ -28,15 +28,16 @@ export function ReceiptPage(goc, { nguoiDung }) {
     tai: () => (linhKien ? lichSu(linhKien.part_id) : Promise.resolve({ data: [] })),
     rong: (d) => d.data.length === 0,
     noiDungRong: 'Chọn một linh kiện để xem lịch sử, hoặc linh kiện này chưa có giao dịch.',
-    veKhiCoDuLieu: (d) => h('table', {},
+    veKhiCoDuLieu: (d) => bangCuon('Lịch sử giao dịch của linh kiện', h('table', {},
+      h('caption', { class: 'chi-doc' }, 'Lịch sử nhập xuất của linh kiện đang chọn'),
       h('thead', {}, h('tr', {}, ['Thời điểm', 'Loại', 'Số lượng', 'Phiếu', 'Người thực hiện']
-        .map((t) => h('th', { scope: 'col' }, t)))),
+        .map((t, i) => h('th', { scope: 'col', class: i === 2 ? 'so' : null }, t)))),
       h('tbody', {}, d.data.map((g) => h('tr', {},
         h('td', {}, gio(g.created_at)),
         h('td', {}, g.txn_type === 'NHAP' ? 'Nhập' : 'Xuất'),
         h('td', { class: 'so' }, g.quantity),
         h('td', {}, g.ticket_id ?? '—'),
-        h('td', {}, g.created_by_name))))),
+        h('td', {}, g.created_by_name)))))),
   });
 
   const dsTong = DataState(choTong, {
@@ -74,7 +75,7 @@ export function ReceiptPage(goc, { nguoiDung }) {
       }
     },
   },
-  h('label', {}, 'Linh kiện'), picker.phanTu,
+  h('label', { for: 'linh-kien' }, 'Linh kiện'), picker.phanTu,
   h('label', { for: 'so_luong' }, 'Số lượng nhập'), soLuong,
   khungKetQua, nut);
 
@@ -82,12 +83,16 @@ export function ReceiptPage(goc, { nguoiDung }) {
     class: 'thanh-loc',
     onsubmit: (e) => { e.preventDefault(); tu = e.target.tu.value; den = e.target.den.value; dsTong.taiLai(); },
   },
-  h('label', {}, 'Từ ngày ', h('input', { name: 'tu', type: 'date', value: tu, required: true })),
-  h('label', {}, 'Đến ngày ', h('input', { name: 'den', type: 'date', value: den, required: true })),
+  h('div', { class: 'truong' }, h('label', { for: 'tu' }, 'Từ ngày'),
+    h('input', { id: 'tu', name: 'tu', type: 'date', value: tu, required: true })),
+  h('div', { class: 'truong' }, h('label', { for: 'den' }, 'Đến ngày'),
+    h('input', { id: 'den', name: 'den', type: 'date', value: den, required: true })),
   h('button', { type: 'submit' }, 'Tính tổng'));
 
   goc.replaceChildren(h('section', { class: 'khung' },
-    h('h1', {}, 'Nhập kho và lịch sử nhập–xuất'), formNhap,
+    h('div', { class: 'trang-dau' }, h('h1', {}, 'Nhập kho và lịch sử nhập–xuất'),
+      h('p', { class: 'ghi-chu' }, 'Chọn linh kiện để nhập thêm hàng, rồi xem tổng nhập xuất và lịch sử của linh kiện đó.')),
+    formNhap,
     h('h2', {}, 'Tổng nhập, tổng xuất'), formKhoang, choTong,
     h('h2', {}, 'Lịch sử giao dịch'), choLichSu));
 }

@@ -14,7 +14,10 @@ export function DataState(goc, { tai, veKhiCoDuLieu, rong, noiDungRong = 'Không
 
   async function taiLai() {
     const lan = ++lanTai;           // bỏ kết quả của lần tải cũ nếu đã có lần mới hơn
-    goc.replaceChildren(h('p', { class: 'ds ds-tai', role: 'status' }, 'Đang tải…'));
+    // Khung xương cho thấy chỗ sẽ có dữ liệu; chữ "Đang tải…" vẫn có để trình đọc màn hình đọc được
+    goc.replaceChildren(h('div', { class: 'ds ds-tai', role: 'status', 'aria-busy': 'true' },
+      h('p', {}, 'Đang tải…'),
+      h('div', { class: 'xuong' }), h('div', { class: 'xuong' }), h('div', { class: 'xuong ngan' })));
     try {
       const d = await tai();
       if (lan !== lanTai) return;
@@ -27,7 +30,7 @@ export function DataState(goc, { tai, veKhiCoDuLieu, rong, noiDungRong = 'Không
       if (lan !== lanTai) return;
       goc.replaceChildren(h('div', { class: 'ds ds-loi', role: 'alert' },
         h('p', {}, e.message || 'Đã xảy ra lỗi.'),
-        h('button', { type: 'button', onclick: taiLai }, 'Thử lại')));
+        h('button', { type: 'button', class: 'phu', onclick: taiLai }, 'Thử lại')));
     }
   }
 

@@ -22,6 +22,13 @@ export function h(tag, thuocTinh = {}, ...con) {
 export const gio = (iso) =>
   new Date(iso).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
 
+/**
+ * Bọc một bảng để cuộn ngang được khi màn hình hẹp. Vùng cuộn có tên (nhan) và nhận focus bằng Tab,
+ * nếu không người dùng chỉ có bàn phím sẽ không cuộn được bảng rộng.
+ */
+export const bangCuon = (nhan, bang) =>
+  h('div', { class: 'bang-cuon', role: 'region', 'aria-label': nhan, tabindex: '0' }, bang);
+
 /** Khung thông báo. loai: 'ok', 'canhbao' hoặc 'loi'. Lỗi dùng role alert để trình đọc màn hình đọc ngay, loại khác dùng role status. */
 export function thongBao(loai, noiDung) {
   return h('div', { class: `tb tb-${loai}`, role: loai === 'loi' ? 'alert' : 'status' }, noiDung);
