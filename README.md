@@ -39,6 +39,9 @@ Nếu mỗi request mất vài giây trên Windows, đặt `DB_HOST=127.0.0.1` t
 
 Nếu báo cổng 5000 đang bận, đặt `PORT=5001` trong `.env` rồi chạy lại `python -m src.app` và mở http://localhost:5001.
 
+### Chạy bằng Docker (không cần cài Python hay PostgreSQL)
+Cần Docker Desktop đang chạy. Trong thư mục gốc của repo chạy một lệnh: `docker compose up --build`. Lệnh này dựng hai container, `db` (PostgreSQL 16) và `app` (Flask); `app` tự chạy `python -m src.db_init` rồi mới mở máy chủ, nên dữ liệu mẫu có sẵn. Khi thấy dòng `Running on http://0.0.0.0:5000` thì mở http://localhost:5000/health như phần trên. Cổng 5000 của máy phải đang trống (tắt `python -m src.app` nếu đang chạy). Dừng bằng `docker compose down`; thêm `-v` để xóa luôn dữ liệu và dựng lại từ trống. Mật khẩu CSDL và `SECRET_KEY` trong `docker-compose.yml` chỉ là giá trị chạy thử cục bộ.
+
 Biến môi trường (xem `.env.example`): `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` để nối PostgreSQL; `SECRET_KEY` để ký token đăng nhập; `PORT` là cổng ứng dụng (mặc định 5000); `LOG_LEVEL` là mức log (`INFO` mặc định, `DEBUG` khi cần điều tra, log ghi ra stdout và không chứa mật khẩu hay chuỗi kết nối).
 
 ## 4. Cấu trúc thư mục
