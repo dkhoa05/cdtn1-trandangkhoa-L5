@@ -57,7 +57,7 @@ SO_LAN_NGAT = 1000                                        # đúng ngưỡng NFR
 def test_ngat_loi_giua_chung_khong_de_ton_kho_lech_voi_log(ctx, monkeypatch):
     service, quan_ly, phieu, part_id = ctx
     service.nhap_kho(quan_ly, part_id, quan_ly['center_id'], 5)
-    monkeypatch.setattr(stock_repo.TransactionRepository, 'them',
+    monkeypatch.setattr(stock_repo.TransactionRepository, 'ghi_giao_dich',
                         lambda *a, **k: (_ for _ in ()).throw(RuntimeError('ngắt giữa chừng')))
     for _ in range(SO_LAN_NGAT):                          # lỗi xảy ra sau khi đã trừ tồn nhưng trước khi ghi log
         with pytest.raises(RuntimeError):

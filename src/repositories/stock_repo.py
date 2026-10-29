@@ -22,7 +22,7 @@ class UserRepository:
     def __init__(self, conn):
         self.conn = conn
 
-    def get(self, user_id):
+    def lay_nguoi_dung(self, user_id):
         """Trả người dùng kèm tên trung tâm, hoặc None nếu không có."""
         return self.conn.execute(
             """SELECT u.user_id, u.full_name, u.role, u.center_id, u.is_active, c.center_name
@@ -34,7 +34,7 @@ class PartRepository:
     def __init__(self, conn):
         self.conn = conn
 
-    def tim(self, center_id, q, chi_duoi_nguong, limit, offset):
+    def tim_linh_kien_trong_kho(self, center_id, q, chi_duoi_nguong, limit, offset):
         """Làm gì: tìm linh kiện đang dùng trong kho của một trung tâm, theo mã hoặc tên, sắp theo mã.
         Nhận: q rỗng nghĩa là không lọc; chi_duoi_nguong=True chỉ lấy linh kiện tồn dưới ngưỡng.
         Trả: (danh sách dòng, tổng số dòng khớp). Lỗi: không có."""
@@ -53,7 +53,7 @@ class PartRepository:
              'limit': limit, 'offset': offset}).fetchall()
         return _tach_total(rows)
 
-    def lay_theo_id(self, part_id):
+    def lay_linh_kien(self, part_id):
         """Trả linh kiện còn dùng theo id, hoặc None (linh kiện đã ngừng cũng coi như không có)."""
         return self.conn.execute(
             'SELECT part_id, part_code, part_name, unit_price FROM part WHERE part_id = %s AND is_active',
@@ -64,28 +64,28 @@ class PartRepository:
         return self.conn.execute(
             'SELECT part_id FROM part WHERE part_code = %s', (part_code,)).fetchone()
 
-    def tao(self, part_code, part_name, unit_price):
+    def tao_linh_kien(self, part_code, part_name, unit_price):
         """Thêm linh kiện mới vào danh mục, trả dòng vừa tạo (RETURNING lấy luôn part_id do CSDL cấp)."""
         return self.conn.execute(
             """INSERT INTO part (part_code, part_name, unit_price) VALUES (%s, %s, %s)
                RETURNING part_id, part_code, part_name, unit_price""",
             (part_code, part_name, unit_price)).fetchone()
 
-    def cap_nhat(self, part_id, part_name, unit_price):
+    def cap_nhat_linh_kien(self, part_id, part_name, unit_price):
         """Sửa tên và đơn giá; trả dòng sau khi sửa, hoặc None nếu không có linh kiện."""
         return self.conn.execute(
             """UPDATE part SET part_name = %s, unit_price = %s WHERE part_id = %s
                RETURNING part_id, part_code, part_name, unit_price""",
             (part_name, unit_price, part_id)).fetchone()
 
-    def con_ton(self, part_id):
+    def co_ton_kho(self, part_id):
         """True nếu còn trung tâm nào đang giữ tồn > 0 của linh kiện này."""
         return self.conn.execute(
             """SELECT EXISTS (SELECT 1 FROM part_stock
                                WHERE part_id = %s AND is_active AND quantity > 0) AS co""",
             (part_id,)).fetchone()['co']
 
-    def ngung(self, part_id):
+    def ngung_su_dung_linh_kien(self, part_id):
         """Xóa mềm: đặt is_active = false ở danh mục và ở mọi kho, không xóa dòng để còn lịch sử xuất nhập."""
         self.conn.execute('UPDATE part SET is_active = false WHERE part_id = %s', (part_id,))
         self.conn.execute('UPDATE part_stock SET is_active = false WHERE part_id = %s', (part_id,))
@@ -95,7 +95,7 @@ class StockRepository:
     def __init__(self, conn):
         self.conn = conn
 
-    def khoa(self, center_id, part_id):
+    def khoa_dong_ton_kho(self, center_id, part_id):
         """Đọc tồn kho và khóa dòng đến hết transaction (NFR2).
 
         FOR UPDATE làm hai người xuất cùng lúc phải xếp hàng: người thứ hai chờ đến khi người đầu xong
@@ -112,7 +112,7 @@ class StockRepository:
             """SELECT quantity, min_threshold, is_active FROM part_stock
                WHERE center_id = %s AND part_id = %s""", (center_id, part_id)).fetchone()
 
-    def them(self, center_id, part_id, min_threshold):
+    def them_vao_kho(self, center_id, part_id, min_threshold):
         """Đưa linh kiện vào kho trung tâm với tồn 0; kích hoạt lại nếu từng ngừng dùng."""
         self.conn.execute(
             """INSERT INTO part_stock (center_id, part_id, quantity, min_threshold)
@@ -127,14 +127,14 @@ class StockRepository:
             'UPDATE part_stock SET min_threshold = %s WHERE center_id = %s AND part_id = %s',
             (min_threshold, center_id, part_id))
 
-    def ngung(self, center_id, part_id):
+    def ngung_su_dung_ton_kho(self, center_id, part_id):
         """Gỡ linh kiện khỏi kho một trung tâm bằng xóa mềm; danh mục chung không đổi."""
         self.conn.execute(
             'UPDATE part_stock SET is_active = false WHERE center_id = %s AND part_id = %s',
             (center_id, part_id))
 
-    def dat_ton(self, center_id, part_id, quantity):
-        """Ghi số tồn mới. Chỉ gọi sau khi khoa() đã giữ khóa dòng, nếu không hai lần ghi có thể đè nhau."""
+    def ghi_ton_moi(self, center_id, part_id, quantity):
+        """Ghi số tồn mới. Chỉ gọi sau khi khoa_dong_ton_kho() đã giữ khóa dòng, nếu không hai lần ghi có thể đè nhau."""
         self.conn.execute(
             'UPDATE part_stock SET quantity = %s WHERE center_id = %s AND part_id = %s',
             (quantity, center_id, part_id))
@@ -144,7 +144,7 @@ class TransactionRepository:
     def __init__(self, conn):
         self.conn = conn
 
-    def them(self, center_id, part_id, loai, quantity, ticket_id, user_id):
+    def ghi_giao_dich(self, center_id, part_id, loai, quantity, ticket_id, user_id):
         """Ghi một dòng lịch sử nhập hoặc xuất (loai là NHAP hoặc XUAT). Trả mã giao dịch và thời điểm ghi."""
         return self.conn.execute(
             """INSERT INTO part_transaction
@@ -178,7 +178,7 @@ class TransactionRepository:
             (center_id, part_id, tu_ngay, den_ngay)).fetchone()
         return r['tong_nhap'], r['tong_xuat']
 
-    def cua_phieu(self, ticket_id):
+    def giao_dich_cua_phieu(self, ticket_id):
         """Các lần xuất linh kiện của một phiếu, mới nhất trước, kèm mã và tên linh kiện."""
         return self.conn.execute(
             """SELECT t.transaction_id, t.part_id, p.part_code, p.part_name, t.quantity, t.created_at
@@ -191,13 +191,13 @@ class TicketRepository:
     def __init__(self, conn):
         self.conn = conn
 
-    def get(self, ticket_id):
+    def lay_phieu(self, ticket_id):
         """Trả phiếu theo id, hoặc None nếu không có."""
         return self.conn.execute(
             'SELECT ticket_id, ticket_code, center_id, status FROM ticket WHERE ticket_id = %s',
             (ticket_id,)).fetchone()
 
-    def ds(self, center_id, trang_thai, limit, offset):
+    def danh_sach_phieu(self, center_id, trang_thai, limit, offset):
         """Danh sách phiếu của một trung tâm; trang_thai None nghĩa là lấy mọi trạng thái. Trả (danh sách, tổng)."""
         rows = self.conn.execute(
             """SELECT ticket_id, ticket_code, center_id, status, COUNT(*) OVER () AS total

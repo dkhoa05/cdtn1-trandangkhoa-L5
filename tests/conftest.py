@@ -21,7 +21,7 @@ class KhoGia:
     """Một 'CSDL' nhỏ: linh kiện 45 tại trung tâm 1 còn 5, ngưỡng 3."""
 
     def __init__(self):
-        self.users = {u['user_id']: u for u in (QUAN_LY, KY_THUAT, KHAC_TT, DA_NGHI)}
+        self.nguoi_dung = {u['user_id']: u for u in (QUAN_LY, KY_THUAT, KHAC_TT, DA_NGHI)}
         self.ton = {(1, 45): {'quantity': 5, 'min_threshold': 3}}
         self.phieu = {
             231: {'ticket_id': 231, 'ticket_code': 'BH-000231/2026', 'center_id': 1,
@@ -37,27 +37,43 @@ class KhoGia:
         self.giao_dich = []
         self.da_commit = 0
         # Repository giả dùng chung một đối tượng cho tiện.
-        self.users_repo = self.parts = self.stock = self.txns = self.tickets = self
+        self.users = self.parts = self.stock = self.txns = self.tickets = self
 
     # users
-    def get(self, key):
-        if key in self.users:
-            return self.users[key]
-        return self.phieu.get(key)
+    def lay_nguoi_dung(self, user_id):
+        return self.nguoi_dung.get(user_id)
+
+    # tickets
+    def lay_phieu(self, ticket_id):
+        return self.phieu.get(ticket_id)
+
+    def danh_sach_phieu(self, *a):
+        return list(self.phieu.values()), len(self.phieu)
 
     # stock
-    def khoa(self, center_id, part_id):
+    def khoa_dong_ton_kho(self, center_id, part_id):
         t = self.ton.get((center_id, part_id))
         return t if t and t.get('is_active', True) else None
 
-    def dat_ton(self, center_id, part_id, quantity):
+    def ghi_ton_moi(self, center_id, part_id, quantity):
         self.ton[(center_id, part_id)]['quantity'] = quantity
 
+    def lay_ton(self, center_id, part_id):
+        t = self.ton.get((center_id, part_id))
+        return {'is_active': True, **t} if t else None
+
+    def them_vao_kho(self, center_id, part_id, min_threshold):
+        self.ton[(center_id, part_id)] = {'quantity': 0, 'min_threshold': min_threshold,
+                                          'is_active': True}
+
+    def dat_nguong(self, center_id, part_id, min_threshold):
+        self.ton[(center_id, part_id)]['min_threshold'] = min_threshold
+
+    def ngung_su_dung_ton_kho(self, center_id, part_id):
+        self.ton[(center_id, part_id)]['is_active'] = False
+
     # txns
-    def them(self, center_id, part_id, *con_lai):
-        if len(con_lai) == 1:                    # StockRepository.them(center, part, ngưỡng)
-            return self.them_ton(center_id, part_id, con_lai[0])
-        loai, quantity, ticket_id, user_id = con_lai      # TransactionRepository.them
+    def ghi_giao_dich(self, center_id, part_id, loai, quantity, ticket_id, user_id):
         gd = {'transaction_id': 9000 + len(self.giao_dich), 'created_at':
               datetime.datetime(2026, 10, 22, 9, 30, tzinfo=datetime.timezone.utc)}
         self.giao_dich.append({**gd, 'loai': loai, 'quantity': quantity,
@@ -70,54 +86,37 @@ class KhoGia:
     def tong_hop(self, *a):
         return 15, 8
 
-    def cua_phieu(self, ticket_id):
+    def giao_dich_cua_phieu(self, ticket_id):
         return [g for g in self.giao_dich if g['ticket_id'] == ticket_id]
 
     # parts (danh mục) và các thao tác CRUD
-    def lay_theo_id(self, part_id):
+    def lay_linh_kien(self, part_id):
         p = self.danh_muc.get(part_id)
         return p if p and p['is_active'] else None
 
     def tim_theo_ma(self, part_code):
         return next((p for p in self.danh_muc.values() if p['part_code'] == part_code), None)
 
-    def tao(self, part_code, part_name, unit_price):
+    def tim_linh_kien_trong_kho(self, center_id, q, chi_duoi_nguong, limit, offset):
+        return [], 0
+
+    def tao_linh_kien(self, part_code, part_name, unit_price):
         part_id = max(self.danh_muc) + 1
         self.danh_muc[part_id] = {'part_id': part_id, 'part_code': part_code,
                                   'part_name': part_name, 'unit_price': unit_price,
                                   'is_active': True}
         return self.danh_muc[part_id]
 
-    def cap_nhat(self, part_id, part_name, unit_price):
+    def cap_nhat_linh_kien(self, part_id, part_name, unit_price):
         self.danh_muc[part_id].update(part_name=part_name, unit_price=unit_price)
         return self.danh_muc[part_id]
 
-    def con_ton(self, part_id):
+    def co_ton_kho(self, part_id):
         return any(k[1] == part_id and v['quantity'] > 0 and v.get('is_active', True)
                    for k, v in self.ton.items())
 
-    def ngung(self, *khoa):
-        if len(khoa) == 1:                       # PartRepository.ngung(part_id)
-            self.danh_muc[khoa[0]]['is_active'] = False
-        else:                                    # StockRepository.ngung(center_id, part_id)
-            self.ton[tuple(khoa)]['is_active'] = False
-
-    def lay_ton(self, center_id, part_id):
-        t = self.ton.get((center_id, part_id))
-        return {'is_active': True, **t} if t else None
-
-    def them_ton(self, center_id, part_id, min_threshold):
-        self.ton[(center_id, part_id)] = {'quantity': 0, 'min_threshold': min_threshold,
-                                          'is_active': True}
-
-    def dat_nguong(self, center_id, part_id, min_threshold):
-        self.ton[(center_id, part_id)]['min_threshold'] = min_threshold
-
-    def tim(self, center_id, q, chi_duoi_nguong, limit, offset):
-        return [], 0
-
-    def ds(self, *a):
-        return list(self.phieu.values()), len(self.phieu)
+    def ngung_su_dung_linh_kien(self, part_id):
+        self.danh_muc[part_id]['is_active'] = False
 
 
 @pytest.fixture

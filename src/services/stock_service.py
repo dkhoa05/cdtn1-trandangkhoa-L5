@@ -22,7 +22,7 @@ class StockService:
         Lỗi: UNAUTHORIZED khi không có người dùng hoặc đã ngừng hoạt động.
         """
         with self.uow() as r:
-            user = r.users.get(user_id)
+            user = r.users.lay_nguoi_dung(user_id)
         if not user or not user['is_active']:
             raise AppError('UNAUTHORIZED', 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn')
         return user
@@ -53,7 +53,7 @@ class StockService:
         """
         trung_tam = self._trung_tam(user, center_id)
         with self.uow() as r:
-            rows, total = r.parts.tim(trung_tam, q, chi_duoi_nguong, size, (page - 1) * size)
+            rows, total = r.parts.tim_linh_kien_trong_kho(trung_tam, q, chi_duoi_nguong, size, (page - 1) * size)
         return self._trang(rows, total, page, size)
 
     # ---- FR2, FR3, FR4: xuất linh kiện cho phiếu (QT-09) ----
@@ -65,7 +65,7 @@ class StockService:
         Lỗi: TICKET_NOT_FOUND, FORBIDDEN (phiếu của trung tâm khác), TICKET_NOT_PROCESSING, PART_NOT_FOUND, INSUFFICIENT_STOCK khi quantity lớn hơn tồn (không trừ tồn).
         """
         with self.uow() as r:
-            phieu = r.tickets.get(ticket_id)
+            phieu = r.tickets.lay_phieu(ticket_id)
             if not phieu:
                 raise AppError('TICKET_NOT_FOUND', f'Không tìm thấy phiếu {ticket_id}')
             self._trung_tam(user, phieu['center_id'])
@@ -73,15 +73,15 @@ class StockService:
                 raise AppError('TICKET_NOT_PROCESSING',
                                f"Phiếu {phieu['ticket_code']} không ở trạng thái đang xử lý")
             # Khóa dòng tồn kho: hai lần xuất đồng thời không cùng đọc một số tồn (NFR2).
-            ton = r.stock.khoa(user['center_id'], part_id)
+            ton = r.stock.khoa_dong_ton_kho(user['center_id'], part_id)
             if not ton:
                 raise AppError('PART_NOT_FOUND', 'Không tìm thấy linh kiện tại trung tâm này')
             if quantity > ton['quantity']:
                 raise AppError('INSUFFICIENT_STOCK',
                                f"Vượt quá tồn kho: còn {ton['quantity']}, yêu cầu xuất {quantity}")
             con_lai = ton['quantity'] - quantity
-            r.stock.dat_ton(user['center_id'], part_id, con_lai)
-            gd = r.txns.them(user['center_id'], part_id, 'XUAT', quantity,
+            r.stock.ghi_ton_moi(user['center_id'], part_id, con_lai)
+            gd = r.txns.ghi_giao_dich(user['center_id'], part_id, 'XUAT', quantity,
                              ticket_id, user['user_id'])
         return {
             'transaction_id': gd['transaction_id'], 'ticket_id': ticket_id, 'part_id': part_id,
@@ -101,12 +101,12 @@ class StockService:
         self._chi_quan_ly(user, 'ghi nhận nhập kho')
         trung_tam = self._trung_tam(user, center_id)
         with self.uow() as r:
-            ton = r.stock.khoa(trung_tam, part_id)
+            ton = r.stock.khoa_dong_ton_kho(trung_tam, part_id)
             if not ton:
                 raise AppError('PART_NOT_FOUND', 'Không tìm thấy linh kiện tại trung tâm này')
             moi = ton['quantity'] + quantity
-            r.stock.dat_ton(trung_tam, part_id, moi)
-            gd = r.txns.them(trung_tam, part_id, 'NHAP', quantity, None, user['user_id'])
+            r.stock.ghi_ton_moi(trung_tam, part_id, moi)
+            gd = r.txns.ghi_giao_dich(trung_tam, part_id, 'NHAP', quantity, None, user['user_id'])
         return {'transaction_id': gd['transaction_id'], 'part_id': part_id,
                 'center_id': trung_tam, 'quantity': quantity, 'new_stock': moi,
                 'created_at': gd['created_at']}
@@ -150,7 +150,7 @@ class StockService:
         Lỗi: Không ném lỗi nghiệp vụ; chỉ lỗi hạ tầng (mất kết nối CSDL) nổi lên để route xử lý.
         """
         with self.uow() as r:
-            rows, total = r.tickets.ds(user['center_id'], trang_thai, size, (page - 1) * size)
+            rows, total = r.tickets.danh_sach_phieu(user['center_id'], trang_thai, size, (page - 1) * size)
         return self._trang(rows, total, page, size)
 
     def linh_kien_cua_phieu(self, user, ticket_id):
@@ -161,11 +161,11 @@ class StockService:
         Lỗi: TICKET_NOT_FOUND; FORBIDDEN khi phiếu của trung tâm khác.
         """
         with self.uow() as r:
-            phieu = r.tickets.get(ticket_id)
+            phieu = r.tickets.lay_phieu(ticket_id)
             if not phieu:
                 raise AppError('TICKET_NOT_FOUND', f'Không tìm thấy phiếu {ticket_id}')
             self._trung_tam(user, phieu['center_id'])
-            return {'ticket': phieu, 'data': r.txns.cua_phieu(ticket_id)}
+            return {'ticket': phieu, 'data': r.txns.giao_dich_cua_phieu(ticket_id)}
 
     # ---- CRUD danh mục linh kiện (xóa mềm, QT-13) ----
     def lay_linh_kien(self, user, part_id):
@@ -176,7 +176,7 @@ class StockService:
         Lỗi: PART_NOT_FOUND khi linh kiện không tồn tại hoặc đã ngừng sử dụng.
         """
         with self.uow() as r:
-            part = r.parts.lay_theo_id(part_id)
+            part = r.parts.lay_linh_kien(part_id)
             if not part:
                 raise AppError('PART_NOT_FOUND', f'Không tìm thấy linh kiện {part_id}')
             ton = r.stock.lay_ton(user['center_id'], part_id)
@@ -193,7 +193,7 @@ class StockService:
         with self.uow() as r:
             if r.parts.tim_theo_ma(part_code):
                 raise AppError('PART_CODE_EXISTS', f'Mã linh kiện {part_code} đã tồn tại')
-            return r.parts.tao(part_code, part_name, unit_price)
+            return r.parts.tao_linh_kien(part_code, part_name, unit_price)
 
     def sua_linh_kien(self, user, part_id, part_name, unit_price):
         """Sửa tên và đơn giá của linh kiện, không đổi mã (chỉ quản lý trung tâm).
@@ -204,9 +204,9 @@ class StockService:
         """
         self._chi_quan_ly(user, 'sửa linh kiện')
         with self.uow() as r:
-            if not r.parts.lay_theo_id(part_id):
+            if not r.parts.lay_linh_kien(part_id):
                 raise AppError('PART_NOT_FOUND', f'Không tìm thấy linh kiện {part_id}')
-            return r.parts.cap_nhat(part_id, part_name, unit_price)
+            return r.parts.cap_nhat_linh_kien(part_id, part_name, unit_price)
 
     def ngung_linh_kien(self, user, part_id):
         """Ngừng sử dụng linh kiện bằng xóa mềm, giữ nguyên lịch sử giao dịch (QT-13).
@@ -217,12 +217,12 @@ class StockService:
         """
         self._chi_quan_ly(user, 'ngừng linh kiện')
         with self.uow() as r:
-            if not r.parts.lay_theo_id(part_id):
+            if not r.parts.lay_linh_kien(part_id):
                 raise AppError('PART_NOT_FOUND', f'Không tìm thấy linh kiện {part_id}')
-            if r.parts.con_ton(part_id):
+            if r.parts.co_ton_kho(part_id):
                 raise AppError('PART_HAS_STOCK',
                                'Linh kiện vẫn còn tồn kho ở trung tâm, chưa thể ngừng sử dụng')
-            r.parts.ngung(part_id)
+            r.parts.ngung_su_dung_linh_kien(part_id)
         return {'part_id': part_id, 'is_active': False}
 
     # ---- CRUD tồn kho của trung tâm ----
@@ -235,12 +235,12 @@ class StockService:
         """
         self._chi_quan_ly(user, 'thêm linh kiện vào kho')
         with self.uow() as r:
-            if not r.parts.lay_theo_id(part_id):
+            if not r.parts.lay_linh_kien(part_id):
                 raise AppError('PART_NOT_FOUND', f'Không tìm thấy linh kiện {part_id}')
             ton = r.stock.lay_ton(user['center_id'], part_id)
             if ton and ton['is_active']:
                 raise AppError('STOCK_EXISTS', 'Linh kiện đã có trong kho trung tâm này')
-            r.stock.them(user['center_id'], part_id, min_threshold)
+            r.stock.them_vao_kho(user['center_id'], part_id, min_threshold)
             ton = r.stock.lay_ton(user['center_id'], part_id)
         return {'part_id': part_id, 'center_id': user['center_id'],
                 'quantity': ton['quantity'], 'min_threshold': min_threshold}
@@ -254,7 +254,7 @@ class StockService:
         """
         self._chi_quan_ly(user, 'đổi ngưỡng cảnh báo')
         with self.uow() as r:
-            ton = r.stock.khoa(user['center_id'], part_id)
+            ton = r.stock.khoa_dong_ton_kho(user['center_id'], part_id)
             if not ton:
                 raise AppError('PART_NOT_FOUND', 'Không tìm thấy linh kiện tại trung tâm này')
             r.stock.dat_nguong(user['center_id'], part_id, min_threshold)
@@ -270,11 +270,11 @@ class StockService:
         """
         self._chi_quan_ly(user, 'gỡ linh kiện khỏi kho')
         with self.uow() as r:
-            ton = r.stock.khoa(user['center_id'], part_id)
+            ton = r.stock.khoa_dong_ton_kho(user['center_id'], part_id)
             if not ton:
                 raise AppError('PART_NOT_FOUND', 'Không tìm thấy linh kiện tại trung tâm này')
             if ton['quantity'] > 0:
                 raise AppError('STOCK_NOT_EMPTY',
                                f"Kho còn {ton['quantity']} linh kiện, chưa thể gỡ")
-            r.stock.ngung(user['center_id'], part_id)
+            r.stock.ngung_su_dung_ton_kho(user['center_id'], part_id)
         return {'part_id': part_id, 'center_id': user['center_id'], 'is_active': False}
