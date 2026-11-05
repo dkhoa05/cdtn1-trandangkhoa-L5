@@ -59,6 +59,35 @@ def test_loi_khong_luong_truoc_tra_500_khong_lo_chi_tiet(client, service, dang_n
     assert r.get_json()['error']['requestId']
 
 
+# ---- Dữ liệu vượt giới hạn cột phải bị từ chối 400 (BUG-006), không phải 500 ----
+def test_nhap_kho_so_luong_vuot_gioi_han_cot_tra_400_kem_ten_truong(client, dang_nhap, kho):
+    r = client.post('/api/parts/45/stock-in', json={'center_id': 1, 'quantity': 100000000000},
+                    headers=dang_nhap(101))
+    assert r.status_code == 400
+    assert 'quantity' in r.get_json()['error']['fields']
+    assert kho.ton[(1, 45)]['quantity'] == 5
+
+
+def test_nhap_kho_dung_gioi_han_cot_van_qua_validator(client, dang_nhap):
+    r = client.post('/api/parts/45/stock-in', json={'center_id': 1, 'quantity': 2147483647},
+                    headers=dang_nhap(101))
+    assert r.status_code == 201
+
+
+def test_csdl_tu_choi_gia_tri_tra_400_khong_phai_500(client, service, dang_nhap):
+    import psycopg
+
+    def loi(*a, **k):
+        raise psycopg.DataError('integer out of range')
+
+    h = dang_nhap(2)
+    service.tim_linh_kien = loi
+    r = client.get('/api/parts', headers=h)
+    assert r.status_code == 400
+    assert r.get_json()['error']['code'] == 'VALIDATION_FAILED'
+    assert 'integer out of range' not in r.get_data(as_text=True)
+
+
 # ---- Mất kết nối CSDL: lỗi hạ tầng phải ra 503 kèm mã tra cứu, không phải 500 chung chung ----
 def _service_mat_db():
     from contextlib import contextmanager

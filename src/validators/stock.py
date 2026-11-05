@@ -5,6 +5,8 @@ from datetime import date
 from src.errors import AppError
 
 MAX_SIZE = 100          # chặn size quá lớn để một lần gọi không kéo cả bảng về
+MAX_INT = 2147483647    # giới hạn cột INT của quantity và min_threshold
+MAX_GIA = 999999999999  # giới hạn cột NUMERIC(12,0) của unit_price
 
 
 def _loi(fields):
@@ -53,8 +55,11 @@ def xuat_kho(body):
 
 def nhap_kho(body):
     """Nhận body nhập kho. Trả {center_id, quantity}. Lỗi: VALIDATION_FAILED, kèm tên trường sai."""
-    return _doc_body(body, {'center_id': 'Trung tâm không hợp lệ',
-                            'quantity': 'Số lượng nhập phải lớn hơn 0'})
+    d = _doc_body(body, {'center_id': 'Trung tâm không hợp lệ',
+                         'quantity': 'Số lượng nhập phải lớn hơn 0'})
+    if d['quantity'] > MAX_INT:
+        raise _loi({'quantity': f'Số lượng nhập tối đa là {MAX_INT}'})
+    return d
 
 
 def phan_trang(args):
@@ -144,8 +149,8 @@ def _kiem(body, quy_tac):
 
 
 _TEN = (lambda v: _chuoi(v, 120), 'Tên từ 1 đến 120 ký tự')
-_GIA = (_so_nguyen_khong_am, 'Đơn giá phải là số nguyên từ 0')
-_NGUONG = (_so_nguyen_khong_am, 'Ngưỡng phải là số nguyên từ 0')
+_GIA = (lambda v: _so_nguyen_khong_am(v) and v <= MAX_GIA, f'Đơn giá phải là số nguyên từ 0 đến {MAX_GIA}')
+_NGUONG = (lambda v: _so_nguyen_khong_am(v) and v <= MAX_INT, f'Ngưỡng phải là số nguyên từ 0 đến {MAX_INT}')
 
 
 def tao_linh_kien(body):

@@ -79,6 +79,13 @@ def create_app(service=None):
                               'message': 'Hệ thống đang gặp sự cố kết nối dữ liệu. Vui lòng thử lại sau.',
                               'requestId': g.get('request_id')}), 503
 
+    @app.errorhandler(psycopg.DataError)
+    def loi_du_lieu_csdl(e):
+        # CSDL từ chối giá trị mà validator không chặn được (tồn cộng dồn vượt INT, ký tự NUL, page quá lớn):
+        # đây là dữ liệu sai của người gọi nên trả 400; chi tiết chỉ ghi log vì có thể lộ tên kiểu dữ liệu.
+        log.info('csdl tu choi gia tri', extra={'ngu_canh': {'requestId': g.get('request_id'), 'chi_tiet': str(e)}})
+        return jsonify(error={'code': 'VALIDATION_FAILED', 'message': 'Dữ liệu không hợp lệ'}), 400
+
     @app.errorhandler(HTTPException)
     def loi_http(e):
         return jsonify(error={'code': e.name.upper().replace(' ', '_'),
