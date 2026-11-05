@@ -40,7 +40,7 @@ Nếu mỗi request mất vài giây trên Windows, đặt `DB_HOST=127.0.0.1` t
 Nếu báo cổng 5000 đang bận, đặt `PORT=5001` trong `.env` rồi chạy lại `python -m src.app` và mở http://localhost:5001.
 
 ### Chạy bằng Docker (không cần cài Python hay PostgreSQL)
-Cần Docker Desktop đang chạy. Trong thư mục gốc của repo chạy một lệnh: `docker compose up --build`. Lệnh này dựng hai container, `db` (PostgreSQL 16) và `app` (Flask); `app` tự chạy `python -m src.db_init` rồi mới mở máy chủ, nên dữ liệu mẫu có sẵn. Khi thấy dòng `Running on http://0.0.0.0:5000` thì mở http://localhost:5000/health như phần trên. Cổng 5000 của máy phải đang trống (tắt `python -m src.app` nếu đang chạy). Dừng bằng `docker compose down`; thêm `-v` để xóa luôn dữ liệu và dựng lại từ trống. Mật khẩu CSDL và `SECRET_KEY` trong `docker-compose.yml` chỉ là giá trị chạy thử cục bộ.
+Cần Docker Desktop đang chạy. Trong thư mục gốc của repo chạy hai lệnh: `copy .env.example .env` rồi `docker compose up -d --build`. Hai lệnh này dựng hai container, `db` (PostgreSQL 16) và `app` (Flask); `app` tự chạy `python -m src.db_init` rồi mới mở máy chủ, nên dữ liệu mẫu có sẵn. Khi `docker compose ps` báo cả hai `healthy` thì mở http://localhost:5000/health như phần trên. Cổng 5000 của máy phải đang trống (tắt `python -m src.app` nếu đang chạy). Dừng bằng `docker compose down`; thêm `-v` để xóa luôn dữ liệu và dựng lại từ trống. Mật khẩu CSDL và `SECRET_KEY` lấy từ `.env`, giá trị trong `.env.example` chỉ để chạy thử cục bộ.
 
 Biến môi trường (xem `.env.example`): `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` để nối PostgreSQL; `SECRET_KEY` để ký token đăng nhập; `PORT` là cổng ứng dụng (mặc định 5000); `LOG_LEVEL` là mức log (`INFO` mặc định, `DEBUG` khi cần điều tra, log ghi ra stdout và không chứa mật khẩu hay chuỗi kết nối).
 
@@ -70,7 +70,7 @@ Kiểm thử tích hợp trên PostgreSQL thật (ngắt lỗi giữa chừng 1.
 - [x] Xuất, nhập kho với quy tắc QT-09, QT-14
 - [x] 51 kiểm thử thuộc ba loại, cộng 3 kiểm thử tích hợp PostgreSQL (NFR2, bộ lọc tồn kho)
 - [x] Màn hình M1, M2, M3 gọi API thật, có trạng thái đang tải, rỗng, lỗi
-- [x] CRUD linh kiện và tồn kho (xóa mềm, migration 002), màn hình M4 Danh mục
+- [x] CRUD linh kiện và tồn kho (xóa mềm, migration 002), màn hình M4 Danh mục
 - [x] Màn hình Tồn kho có bộ lọc tình trạng tồn và sắp xếp; đăng nhập nhanh; menu theo vai trò; giao diện dùng được bằng bàn phím, có chế độ tối
 - [x] Kiểm thử ngắt lỗi giữa chừng và xuất đồng thời (TD-02)
 
