@@ -19,4 +19,6 @@ Lần chạy: 05/11/2026, trên máy sinh viên. Kết quả: 12 test case đã 
 
 Chạy lại TC-08 ngày 09/11/2026 sau bản sửa `ec44f38` (BUG-006), trên Docker `healthy`: HTTP 400, `VALIDATION_FAILED`, trường `quantity` "Số lượng nhập tối đa là 2147483647", tồn 40 -> 40, kết quả PASS. Dòng TC-08 ở bảng giữ nguyên kết quả của lần chạy đầu để truy vết bug.
 
+Từ ngày 09/11/2026 đăng nhập đòi mật khẩu (TD-10), nên `tests/tc_api.py` đọc mật khẩu mẫu từ biến môi trường `DEMO_PASSWORD` (giá trị trong `.env`); các bước của TC-02, TC-07, TC-08 không đổi.
+
 Ảnh: TC-01, 03, 04, 05, 06, 09 ở `TC-01-03-04-05-06-09.png`; TC-02, 07 ở `TC-02-07.png`; TC-08 ở `TC-08.png`; TC-10 ở `TC-10.png`; TC-11, 12 ở `TC-11-12.png`.

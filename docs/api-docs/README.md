@@ -6,7 +6,7 @@ This document describes every endpoint of the L5 spare-parts stock service as it
 
 - **Base URL:** `http://localhost:5000` (the port is set by `PORT`). All business endpoints live under `/api`; `/health` does not.
 - **Format:** JSON requests (`Content-Type: application/json`) and JSON responses. Field names are `snake_case`. Money (`unit_price`) is an integer amount in Vietnamese dong. Timestamps are ISO 8601 strings with a UTC offset.
-- **Authentication:** call `POST /api/auth/login` with a user id, then send `Authorization: Bearer <token>` on every other `/api` call. The prototype has no passwords (design change TD-05). A token is signed with `SECRET_KEY` and expires after 8 hours.
+- **Authentication:** call `POST /api/auth/login` with a user id and a password, then send `Authorization: Bearer <token>` on every other `/api` call. Passwords are stored only as salted scrypt hashes (design change TD-10). A token is signed with `SECRET_KEY` and expires after 8 hours.
 - **Roles:** `QUAN_LY_TT` (center manager) and `KY_THUAT_VIEN` (technician). Every endpoint states which roles may call it. The server enforces roles; the web menu only hides links.
 - **Center scope (rule QT-14):** a user can only read or change data of their own service center. Asking for another center answers `403 FORBIDDEN`.
 - **Pagination:** list endpoints take `page` (default 1) and `size` (default 20, maximum 100) and return `{"data": [...], "page": n, "size": n, "total": n}`.
@@ -91,13 +91,14 @@ Response `200 OK`:
 ### 2. Log in
 
 1. **Method and path:** `POST /api/auth/login`
-2. **Description:** Exchanges a user id for a signed token. There is no password in this prototype.
+2. **Description:** Exchanges a user id and a password for a signed token.
 3. **Authentication:** None.
 4. **Parameters and request body:**
 
 | Name | In | Type | Required | Rules |
 |---|---|---|---|---|
 | `user_id` | body | integer | yes | Positive integer |
+| `password` | body | string | yes | 1 to 128 characters, used as sent (no trimming) |
 
 5. **Success response:** `200` with `token` and `user` (`user_id`, `full_name`, `role`, `center_id`, `center_name`).
 
@@ -105,10 +106,10 @@ Response `200 OK`:
 
 | Code | HTTP | When |
 |---|---|---|
-| `VALIDATION_FAILED` | 400 | `user_id` missing or not a positive integer |
-| `UNAUTHORIZED` | 401 | No such user, or the user is deactivated |
+| `VALIDATION_FAILED` | 400 | `user_id` missing or not a positive integer, or `password` missing, not a string, or longer than 128 characters |
+| `UNAUTHORIZED` | 401 | No such user, the user is deactivated, or the password is wrong. One message covers all three so the answer does not reveal which user ids exist |
 
-7. **Notes and limits:** The token expires after 8 hours. In the examples the token value is shortened to its first characters.
+7. **Notes and limits:** The token expires after 8 hours. There is no lockout after repeated failures and no password change endpoint yet. The password in the examples is the demo value from `.env.example`. In the examples the token value is shortened to its first characters.
 
 **Example: manager logs in**
 
@@ -117,7 +118,8 @@ POST /api/auth/login
 Content-Type: application/json
 
 {
-  "user_id": 101
+  "user_id": 101,
+  "password": "MatKhauMau@2026"
 }
 ```
 
@@ -143,7 +145,8 @@ POST /api/auth/login
 Content-Type: application/json
 
 {
-  "user_id": 999999
+  "user_id": 999999,
+  "password": "MatKhauMau@2026"
 }
 ```
 
@@ -153,7 +156,30 @@ Response `401 Unauthorized`:
 {
   "error": {
     "code": "UNAUTHORIZED",
-    "message": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn"
+    "message": "Mã người dùng hoặc mật khẩu không đúng"
+  }
+}
+```
+
+**Example: wrong password, same answer as an unknown user**
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "user_id": 101,
+  "password": "sai-mat-khau"
+}
+```
+
+Response `401 Unauthorized`:
+
+```json
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Mã người dùng hoặc mật khẩu không đúng"
   }
 }
 ```
@@ -176,6 +202,7 @@ Response `400 Bad Request`:
   "error": {
     "code": "VALIDATION_FAILED",
     "fields": {
+      "password": "Phải là chuỗi từ 1 đến 128 ký tự",
       "user_id": "Phải là số nguyên dương"
     },
     "message": "Dữ liệu không hợp lệ"
@@ -955,7 +982,7 @@ Response `201 Created`:
 ```json
 {
   "center_id": 1,
-  "created_at": "2026-11-09T00:54:44.077150+00:00",
+  "created_at": "2026-11-09T14:36:09.136923+00:00",
   "new_stock": 3,
   "part_id": 181,
   "quantity": 3,
@@ -1054,7 +1081,7 @@ Response `200 OK`:
 {
   "data": [
     {
-      "created_at": "2026-11-09T00:54:44.077150+00:00",
+      "created_at": "2026-11-09T14:36:09.136923+00:00",
       "created_by_name": "Quản lý TT01",
       "quantity": 3,
       "ticket_id": null,
@@ -1269,7 +1296,7 @@ Response `200 OK`:
 {
   "data": [
     {
-      "created_at": "2026-11-09T00:54:44.400949+00:00",
+      "created_at": "2026-11-09T14:36:09.530102+00:00",
       "part_code": "LK-DEMO-01",
       "part_id": 181,
       "part_name": "Loa ngoài demo v2",
@@ -1333,7 +1360,7 @@ Response `201 Created`:
 
 ```json
 {
-  "created_at": "2026-11-09T00:54:44.400949+00:00",
+  "created_at": "2026-11-09T14:36:09.530102+00:00",
   "low_stock_alert": true,
   "part_id": 181,
   "quantity": 3,

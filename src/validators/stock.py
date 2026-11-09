@@ -41,9 +41,24 @@ def _doc_body(body, bat_buoc):
     return {ten: body[ten] for ten in bat_buoc}
 
 
+MAX_MAT_KHAU = 128      # chặn mật khẩu dài bất thường trước khi đưa vào hàm băm
+
+
 def dang_nhap(body):
-    """Nhận body đăng nhập. Trả {user_id}. Lỗi: VALIDATION_FAILED nếu thiếu hoặc sai kiểu."""
-    return _doc_body(body, {'user_id': 'Phải là số nguyên dương'})
+    """Nhận body đăng nhập. Trả {user_id, password}. Lỗi: VALIDATION_FAILED nếu thiếu hoặc sai kiểu.
+    Mật khẩu giữ nguyên, không cắt khoảng trắng; đúng hay sai là việc của service."""
+    fields = {}
+    if isinstance(body, dict):
+        if not _so_nguyen_duong(body.get('user_id')):
+            fields['user_id'] = 'Phải là số nguyên dương'
+        mat_khau = body.get('password')
+        if not (isinstance(mat_khau, str) and 1 <= len(mat_khau) <= MAX_MAT_KHAU):
+            fields['password'] = f'Phải là chuỗi từ 1 đến {MAX_MAT_KHAU} ký tự'
+    else:
+        fields['body'] = 'Phải là một đối tượng JSON'
+    if fields:
+        raise _loi(fields)
+    return {'user_id': body['user_id'], 'password': body['password']}
 
 
 def xuat_kho(body):

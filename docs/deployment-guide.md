@@ -30,7 +30,7 @@ To stop the system run `docker compose down`. To delete its data as well and sta
 
 ## 3. Environment variables
 
-`.env.example` already contains working sample values, so step 3 needs no editing. Change the two secrets before any real deployment.
+`.env.example` already contains working sample values, so step 3 needs no editing. Change the three secrets (`DB_PASSWORD`, `SECRET_KEY`, `DEMO_PASSWORD`) before any real deployment.
 
 | Variable | Meaning | Sample value | Required |
 |---|---|---|---|
@@ -38,6 +38,7 @@ To stop the system run `docker compose down`. To delete its data as well and sta
 | `DB_USER` | PostgreSQL user; created by the `db` container | `postgres` | no (default shown) |
 | `DB_PASSWORD` | PostgreSQL password, used by both containers | `doi_mat_khau_o_day` | yes |
 | `SECRET_KEY` | Key that signs login tokens; anyone who knows it can forge a token, so use a random string of at least 32 characters | `doi_chuoi_bi_mat_o_day` | yes |
+| `DEMO_PASSWORD` | Password given to every sample account; stored only as a salted scrypt hash. The sample value is for trying the system out, change it before any real deployment | `MatKhauMau@2026` | yes |
 | `PORT` | Host port that serves the web page and the API | `5000` | no (default shown) |
 | `LOG_LEVEL` | Log level: `INFO`, or `DEBUG` when investigating; logs never contain passwords or tokens | `INFO` | no (default shown) |
 | `DB_HOST`, `DB_PORT` | Database address. Only used when running without Docker; Docker Compose sets them to `db` and `5432` | `127.0.0.1`, `5432` | no |
@@ -58,7 +59,7 @@ The data comes from `seeds/001_demo.sql` and is loaded automatically at every co
 | `ticket` | 874 |
 | `part_transaction` | 387 |
 
-Two accounts are ready to use on the login page (the page has one button for each): user `101` is a center manager of center 1, and user `2` is a technician of center 4. Any other user id of the table `app_user` also works. The prototype has no passwords.
+Two accounts are ready to use on the login page (the page has one button for each): user `101` is a center manager of center 1, and user `2` is a technician of center 4. Any other user id of the table `app_user` also works. All sample accounts share one password, the value of `DEMO_PASSWORD` (`MatKhauMau@2026` with the sample `.env.example`). It is set only for accounts that have none yet, so changing `DEMO_PASSWORD` later does not change an existing password; to reset them run `docker compose down -v` and step 4. The database stores only salted scrypt hashes, never the password itself.
 
 ## 5. How to check that the system runs correctly
 
@@ -86,7 +87,7 @@ Two accounts are ready to use on the login page (the page has one button for eac
    docker compose exec app pytest
    ```
 
-   Expected last line: `54 passed, 3 skipped`. The 3 skipped tests need the real database and run with `docker compose exec -e RUN_PG_TESTS=1 app pytest tests/test_tich_hop_pg.py`, expected `3 passed`.
+   Expected last line: `58 passed, 4 skipped`. The 4 skipped tests need the real database and run with `docker compose exec -e RUN_PG_TESTS=1 app pytest tests/test_tich_hop_pg.py`, expected `4 passed`.
 
 5. Check that loading the data twice is safe:
 
@@ -94,7 +95,7 @@ Two accounts are ready to use on the login page (the page has one button for eac
    docker compose exec app python -m src.db_init
    ```
 
-   Expected: no error and the same six row counts as in section 4.
+   Expected: no error, the line `da dat mat khau mau cho 0 tai khoan` (every account already has a password) and the same six row counts as in section 4.
 
 ### Troubleshooting
 
@@ -103,6 +104,7 @@ Two accounts are ready to use on the login page (the page has one button for eac
 | `Bind for 0.0.0.0:5000 failed: port is already allocated` | Another program uses port 5000. Set `PORT=5001` in `.env`, run step 4 again and use `http://localhost:5001` |
 | `docker compose up` stops with `Chua co .env` | Step 3 was skipped. Run `cp .env.example .env` |
 | The page loads but the lists are empty or tables are missing | An old volume holds old data. Run `docker compose down -v`, then step 4 |
+| The login page rejects the sample password | The account was created with another `DEMO_PASSWORD` earlier (the password is set only once). Run `docker compose down -v`, then step 4 |
 | `docker compose ps` shows `unhealthy` | Read the reason with `docker compose logs app --tail 50`, fix it, and run step 4 again |
 
 ### Known limits

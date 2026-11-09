@@ -25,5 +25,7 @@ def database_url(dbname=None):
 # vì ai biết khóa này đều tự tạo được token đăng nhập giả.
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-only-secret')
 PORT = int(os.getenv('PORT', '5000'))
+# Mật khẩu mẫu db_init đặt cho các tài khoản dữ liệu mẫu chưa có mật khẩu (TD-10); để trống thì không đặt
+DEMO_PASSWORD = os.getenv('DEMO_PASSWORD', '')
 # Chế độ debug của Flask bật trình gỡ lỗi tương tác (/console), chỉ bật khi đặt FLASK_DEBUG=1 trên máy phát triển
 DEBUG = os.getenv('FLASK_DEBUG', '0') == '1'

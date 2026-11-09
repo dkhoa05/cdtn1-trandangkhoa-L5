@@ -4,6 +4,7 @@ from decimal import Decimal
 from contextlib import contextmanager
 
 import pytest
+from werkzeug.security import generate_password_hash
 
 from src.app import create_app
 from src.services.stock_service import StockService
@@ -15,6 +16,9 @@ KY_THUAT = {'user_id': 2, 'full_name': 'Kỹ thuật viên TT01', 'role': 'KY_TH
 KHAC_TT = {'user_id': 7, 'full_name': 'Kỹ thuật viên TT05', 'role': 'KY_THUAT_VIEN',
            'center_id': 5, 'is_active': True, 'center_name': 'TTBH Cái Răng'}
 DA_NGHI = {**KY_THUAT, 'user_id': 1, 'is_active': False}
+MAT_KHAU_TEST = 'mat-khau-chi-de-test'
+# Chỉ 1.000 vòng pbkdf2 cho nhanh; hệ thống thật dùng scrypt mặc định (src/auth.py)
+_BAM_TEST = generate_password_hash(MAT_KHAU_TEST, method='pbkdf2:sha256:1000')
 
 
 class KhoGia:
@@ -42,6 +46,9 @@ class KhoGia:
     # users
     def lay_nguoi_dung(self, user_id):
         return self.nguoi_dung.get(user_id)
+
+    def lay_mat_khau_bam(self, user_id):
+        return _BAM_TEST if user_id in self.nguoi_dung else None
 
     # tickets
     def lay_phieu(self, ticket_id):
@@ -144,7 +151,7 @@ def client(service):
 @pytest.fixture
 def dang_nhap(client):
     def _dang_nhap(user_id):
-        r = client.post('/api/auth/login', json={'user_id': user_id})
+        r = client.post('/api/auth/login', json={'user_id': user_id, 'password': MAT_KHAU_TEST})
         assert r.status_code == 200, r.get_json()
         return {'Authorization': 'Bearer ' + r.get_json()['token']}
     return _dang_nhap
@@ -153,7 +160,7 @@ def dang_nhap(client):
 @pytest.fixture
 def dang_nhap_token(client, service, kho):
     """Đăng nhập khi CSDL còn sống, rồi 'tắt' CSDL: trả client kèm .token."""
-    r = client.post('/api/auth/login', json={'user_id': 2})
+    r = client.post('/api/auth/login', json={'user_id': 2, 'password': MAT_KHAU_TEST})
     client.token = r.get_json()['token']
     from tests.test_api import _service_mat_db
     service.uow = _service_mat_db().uow

@@ -26,11 +26,11 @@ Minh chứng: quy tắc QT-14 (mọi thao tác giới hạn trong trung tâm c�
 
 ## 4. Mật khẩu và dữ liệu nhạy cảm được băm hoặc mã hóa
 
-Trạng thái: CHƯA LÀM
+Trạng thái: ĐÃ LÀM
 
-Minh chứng: hệ thống hiện chưa lưu mật khẩu nào, `grep -riE "password|mat_khau|hash" migrations seeds src` chỉ ra danh sách trường che trong `src/log_config.py`, bảng `app_user` không có cột mật khẩu; người dùng đăng nhập bằng mã người dùng ở mức prototype (TD-05 trong `docs/thay-doi-thiet-ke.md`).
+Minh chứng: thầy nhận xét BT2 ngày 09/11/2026 là nên bổ sung mật khẩu ở BT3; quyết định được ghi trước khi sửa mã ở TD-10 trong `docs/thay-doi-thiet-ke.md`. Mật khẩu được băm bằng `werkzeug.security.generate_password_hash` (scrypt, salt ngẫu nhiên cho từng chuỗi, `src/auth.py`) và chỉ cột `app_user.password_hash` được lưu (`migrations/003_password.sql`); `grep -rn password_hash src migrations` chỉ ra đúng bốn chỗ dùng: băm và so khớp ở `src/auth.py`, đặt mật khẩu mẫu ở `src/db_init.py`, đọc chuỗi băm ở `src/repositories/stock_repo.py` và cột trong migration. Trên CSDL Docker dựng từ trống, `SELECT count(*), count(distinct password_hash), count(*) filter (where password_hash like 'scrypt:%'), count(*) filter (where password_hash = 'MatKhauMau@2026') FROM app_user` cho `44 | 44 | 44 | 0`: cả 44 tài khoản đều có chuỗi băm scrypt, 44 chuỗi khác nhau dù dùng chung một mật khẩu mẫu (salt riêng), và không dòng nào lưu mật khẩu dạng thường. `docker compose logs app | grep -ci "matkhaumau\|scrypt"` cho 0 dòng, tức log không chứa mật khẩu hay chuỗi băm. Đăng nhập thật: mã 101 kèm mật khẩu mẫu nhận 200; mã 101 kèm mật khẩu sai và mã 999999 (không tồn tại) cùng nhận 401 `UNAUTHORIZED` "Mã người dùng hoặc mật khẩu không đúng", thời gian phản hồi trung vị của hai trường hợp là 71 ms và 73 ms nên không dò được mã nào có thật; thiếu `password` nhận 400. Các test tương ứng: `tests/test_api.py` (`test_sai_mat_khau_hoac_sai_ma_cung_mot_cau_tra_loi_401`, `test_dang_nhap_thieu_hoac_sai_kieu_mat_khau_tra_400`, `test_dang_nhap_dung_khong_tra_chuoi_bam_hay_mat_khau`, `test_mat_khau_luu_dang_bam_co_salt_rieng`) và `tests/test_tich_hop_pg.py` (`test_db_init_da_dat_mat_khau_bam_cho_moi_tai_khoan`).
 
-Ghi chú trung thực: thêm mật khẩu băm làm thay đổi cách đăng nhập nên cần ghi vào `docs/thay-doi-thiet-ke.md` trước khi làm; đến lúc đó mục này mới được đổi sang ĐÃ LÀM.
+Ghi chú trung thực: mật khẩu mẫu `MatKhauMau@2026` nằm trong `.env.example` để người chấm đăng nhập được, nên đây là giá trị chạy thử chứ không phải bí mật; mọi tài khoản mẫu dùng chung nó. Hệ thống chưa có chức năng đổi mật khẩu, chưa khóa tài khoản hay giới hạn số lần thử sai, và token đã cấp vẫn dùng được đến khi hết hạn 8 giờ dù người dùng bấm đăng xuất.
 
 ## 5. Thông báo lỗi không lộ cấu trúc bên trong
 

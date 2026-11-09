@@ -112,3 +112,15 @@ def test_loc_tinh_trang_ton_va_sap_xep_tren_du_lieu_that():
     tang = [p['quantity'] for p in tim('all', 'qty_asc')['data']]
     giam = [p['quantity'] for p in tim('all', 'qty_desc')['data']]
     assert tang == sorted(tang) and giam == sorted(giam, reverse=True)
+
+
+def test_db_init_da_dat_mat_khau_bam_cho_moi_tai_khoan():
+    # TD-10: không tài khoản nào được để trống mật khẩu hay lưu mật khẩu dạng thường
+    from src import auth, config
+    with db.connect() as conn:
+        trong = conn.execute('SELECT COUNT(*) AS n FROM app_user WHERE password_hash IS NULL').fetchone()['n']
+        bam = conn.execute('SELECT password_hash FROM app_user WHERE user_id = 101').fetchone()['password_hash']
+    assert trong == 0
+    assert bam.startswith(('scrypt:', 'pbkdf2:')) and config.DEMO_PASSWORD not in bam
+    if config.DEMO_PASSWORD:
+        assert auth.kiem_tra_mat_khau(config.DEMO_PASSWORD, bam)

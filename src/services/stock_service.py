@@ -3,6 +3,7 @@
 Nhận `unit_of_work` (hàm trả về context manager cấp bộ repository trong MỘT
 transaction) qua constructor, nên test được bằng đối tượng giả, không cần CSDL.
 """
+from src import auth
 from src.errors import AppError
 
 VAI_TRO_QUAN_LY = 'QUAN_LY_TT'
@@ -14,6 +15,22 @@ class StockService:
         self.uow = unit_of_work
 
     # ---- đăng nhập ----
+    def dang_nhap(self, user_id, mat_khau):
+        """Kiểm tra mã người dùng và mật khẩu.
+
+        Nhận: user_id (số nguyên dương), mat_khau (chuỗi).
+        Trả: dict người dùng như lay_nguoi_dung.
+        Lỗi: UNAUTHORIZED, cùng một thông báo cho mọi nguyên nhân (không có mã, ngừng hoạt động, chưa đặt mật
+        khẩu, sai mật khẩu) để người gọi không dò được mã nào tồn tại.
+        """
+        with self.uow() as r:
+            user = r.users.lay_nguoi_dung(user_id)
+            bam = r.users.lay_mat_khau_bam(user_id) if user else None
+        khop = auth.kiem_tra_mat_khau(mat_khau, bam)
+        if not user or not user['is_active'] or not khop:
+            raise AppError('UNAUTHORIZED', 'Mã người dùng hoặc mật khẩu không đúng')
+        return user
+
     def lay_nguoi_dung(self, user_id):
         """Đọc người dùng đang đăng nhập và xác nhận còn hoạt động.
 

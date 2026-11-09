@@ -44,14 +44,14 @@ docker compose ps
 docker compose exec app pytest
 ```
 
-`docker compose ps` phải cho cả hai dịch vụ ở trạng thái `healthy`; mở http://localhost:5000/health phải trả `{"db":"ok","status":"ok"}`; `pytest` phải báo `54 passed, 3 skipped` (3 kiểm thử tích hợp PostgreSQL mặc định bị bỏ qua, chạy bằng `docker compose exec -e RUN_PG_TESTS=1 app pytest tests/test_tich_hop_pg.py`, kết quả `3 passed`). Số dòng dữ liệu mẫu để đối chiếu nằm ở log của `app` (`docker compose logs app`): service_center 6, app_user 44, part 180, part_stock 717, ticket 874, part_transaction 387.
+`docker compose ps` phải cho cả hai dịch vụ ở trạng thái `healthy`; mở http://localhost:5000/health phải trả `{"db":"ok","status":"ok"}`; `pytest` phải báo `58 passed, 4 skipped` (4 kiểm thử tích hợp PostgreSQL mặc định bị bỏ qua, chạy bằng `docker compose exec -e RUN_PG_TESTS=1 app pytest tests/test_tich_hop_pg.py`, kết quả `4 passed`). Số dòng dữ liệu mẫu để đối chiếu nằm ở log của `app` (`docker compose logs app`): service_center 6, app_user 44, part 180, part_stock 717, ticket 874, part_transaction 387.
 
 Dừng bằng `docker compose down`; thêm `-v` để xóa luôn dữ liệu và dựng lại từ trống. Nếu cổng 5000 đang bận, đặt `PORT=5001` trong `.env`, chạy lại lệnh thứ hai và mở http://localhost:5001.
 
 ### Cách B: chạy trực tiếp bằng Python (không dùng Docker)
 Bốn bước, mỗi bước một lệnh, chạy trong thư mục gốc của repo sau khi đã bật môi trường ảo ở mục 2.
 
-1. `copy .env.example .env` rồi mở `.env` điền `DB_PASSWORD` (và `DB_USER` nếu khác `postgres`)
+1. `copy .env.example .env` rồi mở `.env` điền `DB_PASSWORD` (và `DB_USER` nếu khác `postgres`); `.env` cũ chưa có dòng `DEMO_PASSWORD` thì chép dòng đó từ `.env.example`
 2. `pip install -r requirements.txt`
 3. `python -m src.db_init` (tự tạo CSDL nếu chưa có, tạo bảng và nạp dữ liệu mẫu; chạy lại lần hai không lỗi)
 4. `python -m src.app`
@@ -59,11 +59,11 @@ Bốn bước, mỗi bước một lệnh, chạy trong thư mục gốc của r
 Lệnh kiểm thử của cách B là `pytest` (mục 5). Nếu mỗi request mất vài giây trên Windows, đặt `DB_HOST=127.0.0.1` trong `.env` (tên `localhost` có thể được thử bằng IPv6 trước). Nếu báo cổng 5000 đang bận, đặt `PORT=5001` trong `.env` rồi chạy lại `python -m src.app` và mở http://localhost:5001. Muốn bật trình gỡ lỗi của Flask trên máy phát triển, đặt `FLASK_DEBUG=1` trong `.env`; mặc định nó đóng.
 
 ### Dùng thử hệ thống (cả hai cách)
-Mở http://localhost:5000 và bấm "Kỹ thuật viên" (mã `2`, trung tâm Ninh Kiều) hoặc "Quản lý trung tâm" (mã `101`, trung tâm Quận 10) để đăng nhập ngay; tài khoản khác thì nhập mã ở mục "Đăng nhập bằng mã người dùng khác". Kỹ thuật viên chỉ thấy Tồn kho và Xuất linh kiện, quản lý thấy thêm Nhập kho và lịch sử, Danh mục. Màn hình Tồn kho lọc được theo từ khóa, tình trạng tồn (tất cả, dưới ngưỡng, hết hàng, còn đủ), sắp xếp và số dòng mỗi trang.
+Mở http://localhost:5000, bấm thẻ "Kỹ thuật viên" (mã `2`, trung tâm Ninh Kiều) hoặc "Quản lý trung tâm" (mã `101`, trung tâm Quận 10) để điền sẵn mã, rồi nhập mật khẩu. Mọi tài khoản dữ liệu mẫu dùng chung một mật khẩu, chính là giá trị `DEMO_PASSWORD` trong `.env` (bản mẫu `.env.example` ghi `MatKhauMau@2026`); tài khoản khác thì nhập mã của nó vào ô "Mã người dùng". Mật khẩu chỉ được đặt cho tài khoản còn trống khi chạy `python -m src.db_init`, nên đổi `DEMO_PASSWORD` về sau không đổi mật khẩu đã có (muốn đặt lại thì dựng lại từ trống bằng `docker compose down -v`). Kỹ thuật viên chỉ thấy Tồn kho và Xuất linh kiện, quản lý thấy thêm Nhập kho và lịch sử, Danh mục. Màn hình Tồn kho lọc được theo từ khóa, tình trạng tồn (tất cả, dưới ngưỡng, hết hàng, còn đủ), sắp xếp và số dòng mỗi trang.
 
 Giao diện web không có bước chạy riêng: máy chủ Flask phục vụ cả API lẫn trang web trên cùng một cổng, nên không phải cài hay chạy thêm gì cho `web/`. Giao diện luôn gọi API ở cùng địa chỉ với trang, nên không có biến cấu hình địa chỉ API; nếu máy chủ tắt thì giao diện hiện thông báo lỗi kèm nút Thử lại.
 
-Biến môi trường (xem `.env.example`, mỗi biến có chú thích): `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` để nối PostgreSQL (Docker tự đặt `DB_HOST=db`); `SECRET_KEY` để ký token đăng nhập; `PORT` là cổng ứng dụng (mặc định 5000); `LOG_LEVEL` là mức log (`INFO` mặc định, `DEBUG` khi cần điều tra, log ghi ra stdout và không chứa mật khẩu hay chuỗi kết nối); `FLASK_DEBUG` bật trình gỡ lỗi (mặc định `0`).
+Biến môi trường (xem `.env.example`, mỗi biến có chú thích): `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` để nối PostgreSQL (Docker tự đặt `DB_HOST=db`); `SECRET_KEY` để ký token đăng nhập; `PORT` là cổng ứng dụng (mặc định 5000); `DEMO_PASSWORD` là mật khẩu của các tài khoản dữ liệu mẫu (được băm trước khi lưu); `LOG_LEVEL` là mức log (`INFO` mặc định, `DEBUG` khi cần điều tra, log ghi ra stdout và không chứa mật khẩu hay chuỗi kết nối); `FLASK_DEBUG` bật trình gỡ lỗi (mặc định `0`).
 
 ## 4. Cấu trúc thư mục
 - docs/: tài liệu (SRS, thiết kế, sơ đồ, nhật ký thay đổi thiết kế, khai báo AI)
@@ -84,7 +84,7 @@ Trong Docker: `docker compose exec app pytest`. Chạy trực tiếp: `pytest`. 
 
 Kiểm thử tích hợp trên PostgreSQL thật (ngắt lỗi giữa chừng 1.000 lần, tám luồng xuất đồng thời, lọc và sắp xếp tồn kho trên dữ liệu thật) mặc định bị bỏ qua; chạy bằng `$env:RUN_PG_TESTS="1"; pytest tests/test_tich_hop_pg.py` sau khi đã chạy `python -m src.db_init`. Ba kiểm thử này mất khoảng một phút; hai kiểm thử có ghi dữ liệu tự xóa hẳn dữ liệu chúng tạo và kiểm thử còn lại chỉ đọc, nên chạy nhiều lần không làm đầy CSDL.
 
-`pytest` chạy 54 test, không cần PostgreSQL (dùng repository giả), gồm ba loại: luồng đúng, giá trị biên (xuất đúng bằng tồn, vượt tồn 1 đơn vị, tồn bằng ngưỡng), dữ liệu sai và kiểm soát truy cập theo trung tâm.
+`pytest` chạy 58 test, không cần PostgreSQL (dùng repository giả), gồm ba loại: luồng đúng, giá trị biên (xuất đúng bằng tồn, vượt tồn 1 đơn vị, tồn bằng ngưỡng), dữ liệu sai và kiểm soát truy cập theo trung tâm, trong đó có đăng nhập bằng mật khẩu (sai mật khẩu và sai mã cho cùng một câu trả lời 401).
 
 ## 6. Trạng thái hiện tại
 - [x] Điều chỉnh thiết kế theo phản hồi BT1 (docs/thay-doi-thiet-ke.md)
@@ -92,10 +92,11 @@ Kiểm thử tích hợp trên PostgreSQL thật (ngắt lỗi giữa chừng 1.
 - [x] Migration và dữ liệu mẫu
 - [x] Tra cứu tồn kho, xuất, nhập kho và lịch sử qua 3 lớp (routes, services, repositories)
 - [x] Xuất, nhập kho với quy tắc QT-09, QT-14
-- [x] 54 kiểm thử thuộc ba loại, cộng 3 kiểm thử tích hợp PostgreSQL (NFR2, bộ lọc tồn kho)
+- [x] 58 kiểm thử thuộc ba loại, cộng 4 kiểm thử tích hợp PostgreSQL (NFR2, bộ lọc tồn kho, mật khẩu mẫu đã băm)
+- [x] Đăng nhập bằng mã người dùng và mật khẩu băm scrypt (TD-10, BT3)
 - [x] Màn hình M1, M2, M3 gọi API thật, có trạng thái đang tải, rỗng, lỗi
 - [x] CRUD linh kiện và tồn kho (xóa mềm, migration 002), màn hình M4 Danh mục
-- [x] Màn hình Tồn kho có bộ lọc tình trạng tồn và sắp xếp; đăng nhập nhanh; menu theo vai trò; giao diện dùng được bằng bàn phím, có chế độ tối
+- [x] Màn hình Tồn kho có bộ lọc tình trạng tồn và sắp xếp; thẻ tài khoản mẫu điền sẵn mã đăng nhập; menu theo vai trò; giao diện dùng được bằng bàn phím, có chế độ tối
 - [x] Kiểm thử ngắt lỗi giữa chừng và xuất đồng thời (TD-02)
 - [x] Đóng gói Docker Compose có healthcheck, dữ liệu mẫu tự nạp, chạy pytest được trong container
 - [x] Test Plan, Test Report 12 test case, Bug Log, checklist bảo mật (docs/)

@@ -1,4 +1,5 @@
 """Tầng HTTP: mã trạng thái và hình dạng lỗi khớp docs/api-contract.md."""
+from tests.conftest import MAT_KHAU_TEST
 
 
 def test_xuat_thanh_cong_tra_201(client, dang_nhap):
@@ -30,7 +31,41 @@ def test_khong_co_token_hoac_token_gia_tra_401(client):
 
 
 def test_nguoi_dung_da_nghi_khong_dang_nhap_duoc(client):
-    assert client.post('/api/auth/login', json={'user_id': 1}).status_code == 401
+    r = client.post('/api/auth/login', json={'user_id': 1, 'password': MAT_KHAU_TEST})
+    assert r.status_code == 401
+
+
+def test_sai_mat_khau_hoac_sai_ma_cung_mot_cau_tra_loi_401(client):
+    # TD-10: không lộ mã nào có thật, nên sai mật khẩu và sai mã phải giống hệt nhau
+    sai_mk = client.post('/api/auth/login', json={'user_id': 2, 'password': 'sai-mat-khau'})
+    sai_ma = client.post('/api/auth/login', json={'user_id': 999999, 'password': MAT_KHAU_TEST})
+    assert sai_mk.status_code == sai_ma.status_code == 401
+    assert sai_mk.get_json() == sai_ma.get_json()
+    assert 'token' not in sai_mk.get_json()
+
+
+def test_dang_nhap_thieu_hoac_sai_kieu_mat_khau_tra_400(client):
+    for body in ({'user_id': 2}, {'user_id': 2, 'password': ''}, {'user_id': 2, 'password': 123},
+                 {'user_id': 2, 'password': 'a' * 129}):
+        r = client.post('/api/auth/login', json=body)
+        assert r.status_code == 400, body
+        assert 'password' in r.get_json()['error']['fields']
+
+
+def test_dang_nhap_dung_khong_tra_chuoi_bam_hay_mat_khau(client):
+    r = client.post('/api/auth/login', json={'user_id': 2, 'password': MAT_KHAU_TEST})
+    assert r.status_code == 200
+    assert MAT_KHAU_TEST not in r.get_data(as_text=True)
+    assert 'hash' not in r.get_data(as_text=True)
+
+
+def test_mat_khau_luu_dang_bam_co_salt_rieng():
+    from src import auth
+    a, b = auth.bam_mat_khau('cung-mot-mat-khau'), auth.bam_mat_khau('cung-mot-mat-khau')
+    assert a != b and 'cung-mot-mat-khau' not in a          # salt khác nhau nên chuỗi băm khác nhau
+    assert auth.kiem_tra_mat_khau('cung-mot-mat-khau', a)
+    assert not auth.kiem_tra_mat_khau('khac', a)
+    assert not auth.kiem_tra_mat_khau('cung-mot-mat-khau', None)   # tài khoản chưa có mật khẩu
 
 
 def test_tra_cuu_trung_tam_khac_tra_403(client, dang_nhap):

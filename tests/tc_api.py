@@ -3,6 +3,7 @@
 Chạy bằng: python tests/tc_api.py TC-07 (bỏ mã thì chạy cả ba). Chỉ dùng thư viện chuẩn, không cần venv.
 """
 import json
+import os
 import sys
 import urllib.error
 import urllib.request
@@ -25,7 +26,10 @@ def goi(method, duong_dan, user=None, body=None):
 
 
 def dang_nhap(user):
-    return goi('POST', '/api/auth/login', body={'user_id': user})[1]['token']
+    # Mật khẩu mẫu lấy từ biến DEMO_PASSWORD (giá trị trong .env); không ghi cứng trong mã
+    if 'DEMO_PASSWORD' not in os.environ:
+        sys.exit('Hay dat bien moi truong DEMO_PASSWORD (gia tri trong .env) truoc khi chay.')
+    return goi('POST', '/api/auth/login', body={'user_id': user, 'password': os.environ['DEMO_PASSWORD']})[1]['token']
 
 
 def ton(user, part_code):

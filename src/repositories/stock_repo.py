@@ -29,6 +29,11 @@ class UserRepository:
                FROM app_user u JOIN service_center c USING (center_id)
                WHERE u.user_id = %s""", (user_id,)).fetchone()
 
+    def lay_mat_khau_bam(self, user_id):
+        """Trả chuỗi băm mật khẩu, hoặc None nếu chưa đặt hay không có người dùng. Chỉ đăng nhập mới được gọi."""
+        dong = self.conn.execute('SELECT password_hash FROM app_user WHERE user_id = %s', (user_id,)).fetchone()
+        return dong['password_hash'] if dong else None
+
 
 # Điều kiện lọc và thứ tự sắp xếp là hằng số của repository: giá trị người dùng gửi lên chỉ để CHỌN khóa trong hai
 # bảng này (validator đã giới hạn), không bao giờ được nối vào câu SQL.

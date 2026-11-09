@@ -19,6 +19,9 @@ COPY docs ./docs
 RUN useradd --create-home app
 USER app
 
+# Thư mục /app thuộc root nên người dùng thường không ghi được cache của pytest; tắt cache để kết quả không kèm cảnh báo
+ENV PYTEST_ADDOPTS="-p no:cacheprovider"
+
 EXPOSE 5000
 
 # /health trả 503 khi mất CSDL thì urlopen báo lỗi, container chuyển sang unhealthy

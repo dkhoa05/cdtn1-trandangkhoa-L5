@@ -53,7 +53,7 @@ label { display: block; margin: 16px 0 4px; font-weight: 600; }
 input, select, button { font: inherit; min-height: 40px; padding: 8px 12px; border-radius: var(--goc); border: 1px solid var(--vien-dam);
   background: var(--the); color: var(--chu); }
 input::placeholder { color: var(--phu); opacity: 1; }
-input:not([type]), input[type="search"], input[type="number"], input[type="text"], input[type="date"], select { width: 100%; max-width: 460px; }
+input:not([type]), input[type="search"], input[type="number"], input[type="text"], input[type="password"], input[type="date"], select { width: 100%; max-width: 460px; }
 input:focus-visible, select:focus-visible { border-color: var(--chinh); }
 button { cursor: pointer; font-weight: 600; background: var(--chinh); color: var(--chinh-chu); border-color: var(--chinh); }
 button:hover:not(:disabled) { background: var(--chinh-dam); border-color: var(--chinh-dam); }

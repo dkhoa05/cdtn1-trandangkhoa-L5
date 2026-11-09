@@ -11,7 +11,7 @@
 | GET | `/api/parts/{part_id}/transactions?center_id={id}` | Lịch sử chi tiết từng giao dịch nhập–xuất của một linh kiện | US7 |
 | GET | `/api/parts/{part_id}/transactions/summary?center_id={id}&from={date}&to={date}` | Tổng nhập, tổng xuất của linh kiện trong khoảng thời gian | US7 |
 
-Bổ sung ở buổi 10 (xem TD-05): `POST /api/auth/login` (body `{"user_id": 2}`, trả `{"token", "user"}`), `GET /api/tickets?status=DANG_XU_LY` (phiếu của trung tâm người dùng), `GET /api/tickets/{ticket_id}/parts` (linh kiện đã xuất cho phiếu, AC2.2). Mọi endpoint còn lại đòi header `Authorization: Bearer <token>`; thiếu hoặc sai token trả 401.
+Bổ sung ở buổi 10 (xem TD-05, thêm mật khẩu ở TD-10): `POST /api/auth/login` (body `{"user_id": 2, "password": "..."}`, trả `{"token", "user"}`), `GET /api/tickets?status=DANG_XU_LY` (phiếu của trung tâm người dùng), `GET /api/tickets/{ticket_id}/parts` (linh kiện đã xuất cho phiếu, AC2.2). Mọi endpoint còn lại đòi header `Authorization: Bearer <token>`; thiếu hoặc sai token trả 401.
 
 CRUD linh kiện và tồn kho (buổi 10, xem TD-06), chỉ vai trò quản lý trung tâm được ghi, kỹ thuật viên nhận 403:
 
@@ -210,8 +210,8 @@ Thành công, 200:
 ```json
 {"token": "eyJ1aWQiOjJ9...", "user": {"user_id": 2, "full_name": "Trần Hoài Giang", "role": "KY_THUAT_VIEN", "center_id": 4, "center_name": "TTBH Ninh Kiều"}}
 ```
-Lỗi 400 (mã không phải số nguyên dương): `{"error": {"code": "VALIDATION_FAILED", "message": "Dữ liệu không hợp lệ", "fields": {"user_id": "Phải là số nguyên dương"}}}`
-Lỗi 401 (mã không tồn tại hoặc tài khoản đã ngừng): `{"error": {"code": "UNAUTHORIZED", "message": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn"}}`
+Lỗi 400 (mã không phải số nguyên dương hoặc thiếu mật khẩu): `{"error": {"code": "VALIDATION_FAILED", "message": "Dữ liệu không hợp lệ", "fields": {"password": "Phải là chuỗi từ 1 đến 128 ký tự"}}}`
+Lỗi 401 (mã không tồn tại, sai mật khẩu hoặc tài khoản đã ngừng, cùng một câu trả lời): `{"error": {"code": "UNAUTHORIZED", "message": "Mã người dùng hoặc mật khẩu không đúng"}}`
 
 ### GET /api/parts và GET /api/parts/low-stock
 Thành công, 200 (`low-stock` cùng dạng, chỉ gồm linh kiện có `quantity` nhỏ hơn `min_threshold`):
