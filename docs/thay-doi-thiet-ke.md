@@ -42,7 +42,7 @@ Chỉ những chỗ Bài tập 1 đã viết một điều và Bài tập 2 làm
 - Lý do phát sinh: API contract BT1 không có cách xác định người dùng, trong khi QT-14 và NFR3 cần biết trung tâm của người gọi; màn hình M2 cần chọn phiếu đang xử lý và xem linh kiện đã dùng (AC2.2) nhưng contract chưa có endpoint tương ứng.
 - Quyết định: THÊM `POST /api/auth/login` (nhận `user_id`, trả token ký bằng SECRET_KEY, hạn 8 giờ), `GET /api/tickets?status=` và `GET /api/tickets/{id}/parts`. Mọi endpoint khác đòi header `Authorization: Bearer`.
 - Lý do: tối thiểu để giao diện chạy được với dữ liệu thật mà không đổi mô hình dữ liệu.
-- Ảnh hưởng: docs/api-contract.md. Hạn chế đã biết: bảng app_user chưa có mật khẩu nên đăng nhập chỉ bằng mã người dùng, chỉ phù hợp mức prototype. Hết hạn hoặc sai token trả 401, frontend xóa token và về trang đăng nhập. Cách lưu token: `sessionStorage` của trình duyệt (mất khi đóng tab, không ghi trong mã nguồn). Hạn chế: mã JavaScript trên cùng trang đọc được token nếu trang có lỗ hổng chèn mã (XSS); giao diện giảm rủi ro này bằng cách chỉ dựng DOM bằng textContent, không dùng innerHTML. Hướng nâng cấp: cookie HttpOnly do máy chủ đặt.
+- Ảnh hưởng: docs/api-contract.md. Hạn chế đã biết ở BT2: bảng app_user chưa có mật khẩu nên đăng nhập chỉ bằng mã người dùng (đã khắc phục ở TD-10). Hết hạn hoặc sai token trả 401, frontend xóa token và về trang đăng nhập. Cách lưu token: `sessionStorage` của trình duyệt (mất khi đóng tab, không ghi trong mã nguồn). Hạn chế: mã JavaScript trên cùng trang đọc được token nếu trang có lỗ hổng chèn mã (XSS); giao diện giảm rủi ro này bằng cách chỉ dựng DOM bằng textContent, không dùng innerHTML. Hướng nâng cấp: cookie HttpOnly do máy chủ đặt.
 
 ### TD-06. Thêm CRUD linh kiện và tồn kho, xóa mềm
 
@@ -72,3 +72,13 @@ Chỉ những chỗ Bài tập 1 đã viết một điều và Bài tập 2 làm
 - Quyết định: SỬA, giao diện nằm ở `web/` (JavaScript thuần, không cần bước build) gọi API qua `web/src/api/client.js`; Flask chỉ phục vụ tệp tĩnh và API, nên giao diện và API cùng origin và không cần cấu hình CORS.
 - Lý do: tách hẳn lớp trình bày khỏi lớp nghiệp vụ, đúng yêu cầu "mọi lệnh gọi mạng đi qua một lớp client" và kiểm bằng `grep "fetch(" web/src/pages` cho kết quả rỗng; một lệnh chạy được cả hệ thống, tránh lỗi CORS hay gặp ở buổi tích hợp.
 - Ảnh hưởng: wireframe M1, M2, M3 giữ nguyên; thêm màn hình M4 (TD-06); README mục 3 và 4; src/app.py. Vì cùng origin nên địa chỉ API không cấu hình bằng biến môi trường; nếu sau này tách giao diện sang máy chủ riêng thì khi đó mới cần biến này.
+
+## Sau phản hồi Bài tập 2 (buổi 15, ngày 09/11/2026)
+
+### TD-10. Đăng nhập bằng mã người dùng kèm mật khẩu băm
+
+- Phản hồi của GV: bảng kiểm chứng BT2 đạt đủ các mục; lưu ý duy nhất là đăng nhập mới bằng mã người dùng, nên bổ sung mật khẩu ở BT3. Đây cũng là hạn chế đã ghi ở TD-05.
+- Quyết định: SỬA TD-05. `POST /api/auth/login` nhận thêm `password`; bảng `app_user` thêm cột `password_hash` (migration 003). Mật khẩu được băm bằng `werkzeug.security` (scrypt kèm salt riêng cho từng người dùng, thư viện này đi kèm Flask nên không thêm phụ thuộc), CSDL chỉ giữ chuỗi băm, mật khẩu thật không được lưu hay ghi log.
+- Lý do: lưu mật khẩu dạng băm có salt khiến lộ CSDL không kéo theo lộ mật khẩu; chọn thư viện có sẵn thay vì tự viết hàm băm. Thông báo lỗi dùng một câu chung cho "không có mã", "tài khoản ngừng hoạt động" và "sai mật khẩu" (đều 401) để không lộ mã nào tồn tại; khi không có mã vẫn băm thử một chuỗi giả để thời gian phản hồi không phân biệt hai trường hợp.
+- Dữ liệu mẫu: các tài khoản trong seed chưa có mật khẩu, nên `python -m src.db_init` đặt mật khẩu mẫu lấy từ biến môi trường `DEMO_PASSWORD` cho những tài khoản còn trống `password_hash`. Chạy lại lần hai không đổi gì, và đổi `DEMO_PASSWORD` sau đó không ghi đè mật khẩu đã có. Giá trị mẫu nằm trong `.env.example` để người chạy thử đăng nhập được; khi triển khai thật phải đổi.
+- Ảnh hưởng: migrations/003_password.sql, src/db_init.py, src/config.py, src/auth.py (hàm băm và kiểm tra), src/validators/stock.py, src/services/stock_service.py, src/repositories/stock_repo.py, src/routes/api.py, màn hình đăng nhập web/src/pages/LoginPage.js, web/src/api/auth.api.js, .env.example, docker-compose.yml, README.md, docs/api-docs, docs/deployment-guide.md, docs/checklist-bao-mat.md mục 4, các test đăng nhập. Hạn chế còn lại: chưa có chức năng đổi mật khẩu, khóa tài khoản sau nhiều lần sai, hay đăng xuất phía máy chủ; token vẫn hết hạn sau 8 giờ.
