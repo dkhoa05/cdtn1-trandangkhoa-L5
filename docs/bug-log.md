@@ -1,6 +1,6 @@
-# Nhật ký lỗi (Bug Log) – Bài tập 2
+# Nhật ký lỗi (Bug Log) – Bài tập 3
 
-Mỗi mục có bảy dòng theo mẫu của học phần. Link commit trỏ tới repo công khai `dkhoa05/cdtn1-trandangkhoa-L5`. Lỗi nào được sửa ngay trước lần commit đầu của module thì nêu rõ commit chứa bản sửa và không có commit "trước khi sửa" riêng.
+Bug Log này ghi các lỗi nằm trong mã nguồn (`src/`, `web/`) đã được sửa. Mỗi mục có bảy dòng theo mẫu của học phần, link commit trỏ tới repo công khai `dkhoa05/cdtn1-trandangkhoa-L5`. Mã lỗi giữ theo thứ tự phát hiện trong dự án nên không liền nhau.
 
 ## BUG-001. Mất kết nối cơ sở dữ liệu trả 500 chung chung
 
@@ -12,19 +12,7 @@ Mỗi mục có bảy dòng theo mẫu của học phần. Link commit trỏ t�
 | 4. Cách tái lập | Chạy `pytest tests/test_api.py -k mat_ket_noi` ở commit `04238a2`: test FAIL vì nhận 500 thay vì 503 |
 | 5. Nguyên nhân | `psycopg.OperationalError` do `db.connect()` ném ra không có trình xử lý riêng ở `create_app`, nên rơi vào trình xử lý `Exception` chung vốn trả 500 |
 | 6. Cách sửa | Thêm `errorhandler(psycopg.OperationalError)` ở một chỗ duy nhất trong `src/app.py`: ghi ERROR một lần kèm ngăn xếp và `requestId`, trả 503 với mã `DB_UNAVAILABLE`, không lộ chi tiết kết nối. Lớp service không bắt lỗi hạ tầng |
-| 7. Commit và xác nhận | Test: [04238a2](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/04238a2). Sửa: [4520fc8](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/4520fc8). Sau sửa test PASS, toàn bộ 32 test PASS |
-
-## BUG-002. Mỗi request chậm khoảng 4 giây trên Windows
-
-| Dòng | Nội dung |
-|---|---|
-| 1. Mã và mức độ | BUG-002, Major |
-| 2. Phát hiện bởi | Chạy tay giao diện trên PostgreSQL thật; đo thời gian bằng `performance.now()` trong trình duyệt |
-| 3. Triệu chứng | Danh sách linh kiện ở màn hình xuất kho hiện "Đang tải…" nhiều giây, thời gian đo được 4,1 đến 4,4 giây mỗi lần gọi API, vượt ngưỡng 1 giây của NFR1 |
-| 4. Cách tái lập | Đặt `DB_HOST=localhost`, chạy `python -m src.app`, gọi `GET /api/parts` bằng `curl -w "%{time_total}"` |
-| 5. Nguyên nhân | Mỗi request mở hai kết nối CSDL (xác thực người dùng và truy vấn). Tên `localhost` được thử bằng IPv6 trước trong khi máy chủ chỉ nghe IPv4, mỗi kết nối chờ hết thời gian IPv6 rồi mới chuyển sang IPv4 |
-| 6. Cách sửa | Đổi giá trị mặc định trong `.env.example` sang `DB_HOST=127.0.0.1` và ghi chú trong README. Sau sửa mỗi request còn khoảng 0,3 giây |
-| 7. Commit và xác nhận | [277c05e](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/277c05e). Đo lại: 351 ms và 266 ms cho hai lần gọi liên tiếp |
+| 7. Commit và xác nhận | Test: [04238a2](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/04238a2). Sửa: [4520fc8](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/4520fc8). Sau sửa test PASS, toàn bộ 32 test lúc đó PASS |
 
 ## BUG-003. Đơn giá trả về dạng chuỗi
 
@@ -36,28 +24,28 @@ Mỗi mục có bảy dòng theo mẫu của học phần. Link commit trỏ t�
 | 4. Cách tái lập | `curl -XPOST /api/parts` rồi `GET /api/parts/{id}` ở phiên bản đầu của `src/app.py` |
 | 5. Nguyên nhân | Cột `NUMERIC(12,0)` được psycopg trả về kiểu `Decimal`, bộ chuyển JSON mặc định của Flask quy mọi kiểu lạ về chuỗi |
 | 6. Cách sửa | Trong `create_app`, đổi `Decimal` nguyên về `int` (và số lẻ về `float`) khi tuần tự hóa JSON |
-| 7. Commit và xác nhận | Bản sửa nằm trong [563075f](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/563075f) (sửa trước lần commit đầu của module API). Chạy lại curl cho `"unit_price":120000` là số  Test hồi quy bổ sung sau đó ở [1c86910](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/1c86910) (`test_api_chi_tiet_linh_kien_gia_la_so_...`, PASS); không có bản "FAIL trước" vì lỗi đã được sửa trước lần commit đầu của module API. |
+| 7. Commit và xác nhận | Bản sửa nằm trong [563075f](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/563075f), được sửa trước lần commit đầu của module API nên không có bản "FAIL trước". Chạy lại curl cho `"unit_price":120000` là số. Test hồi quy bổ sung ở [1c86910](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/1c86910) (`test_api_chi_tiet_linh_kien_gia_la_so_...`, PASS) |
 
 ## BUG-004. Thông báo trạng thái rỗng dùng chung một câu
 
 | Dòng | Nội dung |
 |---|---|
 | 1. Mã và mức độ | BUG-004, Minor |
-| 2. Phát hiện bởi | Kiểm tra giao diện theo yêu cầu "phân biệt chưa có dữ liệu và bộ lọc không ra kết quả" của mục S4 |
+| 2. Phát hiện bởi | Kiểm tra giao diện theo yêu cầu "phân biệt chưa có dữ liệu và bộ lọc không ra kết quả" của mục S4 ở đề Bài tập 2 |
 | 3. Triệu chứng | Tìm một từ khóa không tồn tại ở màn hình Danh mục vẫn hiện câu "Kho trung tâm chưa có linh kiện nào" |
 | 4. Cách tái lập | Mở `#/catalog`, gõ `zzz` vào ô tìm và bấm Tìm |
 | 5. Nguyên nhân | `DataState` nhận `noiDungRong` là chuỗi cố định, được tính một lần lúc khởi tạo khi bộ lọc còn rỗng |
 | 6. Cách sửa | Cho `noiDungRong` nhận một hàm, `DataState` gọi hàm mỗi lần hiển thị; ba màn hình truyền hàm dựa trên bộ lọc hiện tại |
 | 7. Commit và xác nhận | Bản sửa nằm trong [dfe551d](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/dfe551d) (`web/src/components/DataState.js`). Ảnh xác nhận: `docs/export/e2e-m1-trang-thai-rong.png` |
 
-## BUG-005. Lệnh bật môi trường ảo trong README chứa ký tự hỏng
+## BUG-006. Nhập kho với số lượng quá lớn trả 500
 
 | Dòng | Nội dung |
 |---|---|
-| 1. Mã và mức độ | BUG-005, Major (một lệnh bắt buộc trong README sai, người chấm không dựng được môi trường theo C1) |
-| 2. Phát hiện bởi | Rà soát README theo checklist Buổi 12 ("mỗi bước một lệnh sao chép được"), kiểm bằng `cat -A` |
-| 3. Triệu chứng | Dòng bước 2 hiển thị `venv\Scriptsctivate`; sao chép lệnh ra terminal không bật được môi trường ảo |
-| 4. Cách tái lập | `git show v0.2:README.md \| grep -n Scripts \| cat -A` thấy ký tự `^G` (BEL) thay cho `\a` |
-| 5. Nguyên nhân | Script Python sinh README viết chuỗi `venv\Scripts\activate` trong chuỗi thường nên `\a` được hiểu là ký tự điều khiển BEL (mã 0x07) và được ghi nguyên vào tệp |
-| 6. Cách sửa | Thay ký tự BEL, viết lại lệnh bằng dấu gạch chéo ngược được thoát đúng, đồng thời rút mục 3 còn bốn bước; thêm `tests/test_tai_lieu.py` kiểm mọi tệp `.md` không có ký tự điều khiển ẩn |
-| 7. Commit và xác nhận | Sửa: [a9f5395](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/a9f5395). Test: [43fa513](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/43fa513). Chạy cùng phép kiểm trên README của tag v0.2 cũ báo `0x7`; trên bản mới PASS |
+| 1. Mã và mức độ | BUG-006, Major, một đầu vào sai của người dùng làm lộ lỗi nội bộ thay vì bị từ chối đúng cách (mục C7 của đề Bài tập 2) |
+| 2. Phát hiện bởi | Test case TC-08 trong `docs/test-report.md` (FAIL ở lần chạy ngày 05/11/2026) |
+| 3. Triệu chứng | `POST /api/parts/1/stock-in` với `quantity` = 100000000000 trả HTTP 500 với mã `INTERNAL_ERROR` thay vì 400 nêu trường `quantity`; tồn kho không bị thay đổi |
+| 4. Cách tái lập | Khi hệ thống đang chạy ở commit `b6353fe` (ngay trước bản sửa), chạy `python tests/tc_api.py TC-08` và nhận HTTP 500. Hai test hồi quy của bản sửa cũng FAIL ở commit này: `pytest tests/test_api.py` báo 2 failed, 15 passed |
+| 5. Nguyên nhân | `validators.nhap_kho` chỉ kiểm `quantity` lớn hơn 0 mà không có cận trên theo kiểu cột `INT` (2147483647). Giá trị 100000000000 lọt qua validator tới câu `UPDATE`, PostgreSQL ném `psycopg.errors.NumericValueOutOfRange` (lớp `psycopg.DataError`), không có trình xử lý nào cho lớp lỗi này nên rơi vào trình xử lý `Exception` chung và trả 500 |
+| 6. Cách sửa | Thêm cận trên `MAX_INT` và `MAX_GIA` vào `src/validators/stock.py` cho `quantity`, `min_threshold` và `unit_price`, để dữ liệu sai bị từ chối ngay ở validator với tên trường. Thêm `errorhandler(psycopg.DataError)` trong `src/app.py` làm lớp chặn cuối: trả 400 `VALIDATION_FAILED`, chi tiết kiểu dữ liệu chỉ ghi log, không đưa ra người gọi |
+| 7. Commit và xác nhận | Sửa kèm hai test hồi quy: [ec44f38](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/ec44f38). Xác nhận ngày 09/11/2026: chạy lại TC-08 trên Docker (`healthy`) cho HTTP 400, `VALIDATION_FAILED`, trường `quantity` "Số lượng nhập tối đa là 2147483647", tồn 40 sang 40; hai test hồi quy PASS |

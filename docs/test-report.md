@@ -17,4 +17,6 @@ Lần chạy: 05/11/2026, trên máy sinh viên. Kết quả: 12 test case đã 
 | TC-11 | PostgreSQL thật đã chạy `db_init`; `RUN_PG_TESTS=1` | Ép lỗi sau khi trừ tồn, lặp 1.000 lần | Tồn 5, xuất 1 mỗi lần | Tồn vẫn 5; không có giao dịch XUAT | Cao | Test `test_ngat_loi_giua_chung_khong_de_ton_kho_lech_voi_log` PASSED | PASS |
 | TC-12 | PostgreSQL thật đã chạy `db_init`; `RUN_PG_TESTS=1` | Tám luồng cùng xuất | Tồn 1, xuất 1 mỗi luồng | Đúng một luồng thành công; tồn 0; một giao dịch XUAT | Cao | Test `test_nhieu_giao_dich_xuat_dong_thoi_chi_mot_thanh_cong` PASSED | PASS |
 
+Chạy lại TC-08 ngày 09/11/2026 sau bản sửa `ec44f38` (BUG-006), trên Docker `healthy`: HTTP 400, `VALIDATION_FAILED`, trường `quantity` "Số lượng nhập tối đa là 2147483647", tồn 40 -> 40, kết quả PASS. Dòng TC-08 ở bảng giữ nguyên kết quả của lần chạy đầu để truy vết bug.
+
 Ảnh: TC-01, 03, 04, 05, 06, 09 ở `TC-01-03-04-05-06-09.png`; TC-02, 07 ở `TC-02-07.png`; TC-08 ở `TC-08.png`; TC-10 ở `TC-10.png`; TC-11, 12 ở `TC-11-12.png`.
