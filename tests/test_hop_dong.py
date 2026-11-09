@@ -64,7 +64,7 @@ def test_api_chi_tiet_linh_kien_gia_la_so_va_stock_dung_hinh_dang(client, dang_n
     assert set(co['stock']) == {'quantity', 'min_threshold'}               # không lộ cột is_active
     chua = client.get('/api/parts/46', headers=h).get_json()
     assert chua['stock'] is None
-    assert chua['unit_price'] == 300000 and isinstance(chua['unit_price'], int)   # BUG-003: không trả chuỗi "300000"
+    assert chua['unit_price'] == 300000 and isinstance(chua['unit_price'], int)   # đơn giá phải là số, không trả chuỗi "300000"
 
 
 def test_api_ket_qua_xuat_kho_dung_bo_truong_va_thoi_diem_iso(client, dang_nhap):
