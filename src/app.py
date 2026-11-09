@@ -114,4 +114,4 @@ def create_app(service=None):
 
 
 if __name__ == '__main__':
-    create_app().run(port=config.PORT, debug=True)
+    create_app().run(port=config.PORT, debug=config.DEBUG)
