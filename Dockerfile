@@ -10,6 +10,10 @@ COPY src ./src
 COPY web ./web
 COPY migrations ./migrations
 COPY seeds ./seeds
+# Chép cả bộ kiểm thử, README và docs (test_tai_lieu.py đọc chúng) để chạy pytest ngay trong container
+COPY tests ./tests
+COPY README.md .env.example ./
+COPY docs ./docs
 
 # Chạy bằng người dùng thường, không chạy bằng root
 RUN useradd --create-home app
