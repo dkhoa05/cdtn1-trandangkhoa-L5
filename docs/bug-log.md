@@ -14,18 +14,6 @@ Bug Log này ghi các lỗi nằm trong mã nguồn (`src/`, `web/`) đã đư�
 | 6. Cách sửa | Thêm `errorhandler(psycopg.OperationalError)` ở một chỗ duy nhất trong `src/app.py`: ghi ERROR một lần kèm ngăn xếp và `requestId`, trả 503 với mã `DB_UNAVAILABLE`, không lộ chi tiết kết nối. Lớp service không bắt lỗi hạ tầng |
 | 7. Commit và xác nhận | Test: [04238a2](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/04238a2). Sửa: [4520fc8](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/4520fc8). Sau sửa test PASS, toàn bộ 32 test lúc đó PASS |
 
-## BUG-003. Đơn giá trả về dạng chuỗi
-
-| Dòng | Nội dung |
-|---|---|
-| 1. Mã và mức độ | BUG-003, Minor |
-| 2. Phát hiện bởi | Chạy kịch bản curl CRUD trên PostgreSQL thật (`docs/export/curl-crud-linh-kien.txt`) |
-| 3. Triệu chứng | `unit_price` trong phản hồi là `"120000"` (chuỗi) thay vì số, giao diện phải tự ép kiểu |
-| 4. Cách tái lập | `curl -XPOST /api/parts` rồi `GET /api/parts/{id}` ở phiên bản đầu của `src/app.py` |
-| 5. Nguyên nhân | Cột `NUMERIC(12,0)` được psycopg trả về kiểu `Decimal`, bộ chuyển JSON mặc định của Flask quy mọi kiểu lạ về chuỗi |
-| 6. Cách sửa | Trong `create_app`, đổi `Decimal` nguyên về `int` (và số lẻ về `float`) khi tuần tự hóa JSON |
-| 7. Commit và xác nhận | Bản sửa nằm trong [563075f](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/563075f), được sửa trước lần commit đầu của module API nên không có bản "FAIL trước". Chạy lại curl cho `"unit_price":120000` là số. Test hồi quy bổ sung ở [1c86910](https://github.com/dkhoa05/cdtn1-trandangkhoa-L5/commit/1c86910) (`test_api_chi_tiet_linh_kien_gia_la_so_...`, PASS) |
-
 ## BUG-004. Thông báo trạng thái rỗng dùng chung một câu
 
 | Dòng | Nội dung |
