@@ -21,4 +21,4 @@ Chạy lại TC-08 ngày 09/11/2026 sau bản sửa `ec44f38` (BUG-006), trên D
 
 Từ ngày 09/11/2026 đăng nhập đòi mật khẩu (TD-10), nên `tests/tc_api.py` đọc mật khẩu mẫu từ biến môi trường `DEMO_PASSWORD` (giá trị trong `.env`); các bước của TC-02, TC-07, TC-08 không đổi.
 
-Ảnh: TC-01, 03, 04, 05, 06, 09 ở `TC-01-03-04-05-06-09.png`; TC-02, 07 ở `TC-02-07.png`; TC-08 ở `TC-08.png`; TC-10 ở `TC-10.png`; TC-11, 12 ở `TC-11-12.png`.
+Ảnh chụp lần chạy ngày 12/11/2026 (đặt tên theo test case): TC-01, 03, 04, 05, 06, 09 ở `05-tc-unit.png`; TC-02, 07, 08 ở `06-tc-api.png`; TC-10 ở `07-db-init-lan-hai.png`; TC-11, 12 ở `08-tc-tich-hop.png`. Ảnh toàn bộ bộ test và hệ thống: `03-pytest-pass.png` (58 passed, 4 skipped), `04-docker-ps.png` (hai dịch vụ healthy), `01-dang-nhap.png` và `02-dang-nhap-sai.png` (đăng nhập có mật khẩu).
