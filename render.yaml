@@ -1,0 +1,49 @@
+# Blueprint để deploy thử lên Render (gói miễn phí): một web service Docker và một PostgreSQL.
+# Các bước làm và lưu ý nằm ở docs/deployment-guide.md, mục 6. Không có secret nào trong tệp này:
+# mật khẩu CSDL do Render tạo và nối vào dịch vụ, SECRET_KEY do Render sinh ngẫu nhiên,
+# DEMO_PASSWORD được hỏi lúc tạo Blueprint (sync: false) nên không nằm trong repo.
+databases:
+  - name: kho-linh-kien-db
+    databaseName: cdtn1_l5
+    user: cdtn1_l5
+    plan: free
+    region: singapore
+
+services:
+  - type: web
+    name: kho-linh-kien
+    runtime: docker
+    region: singapore
+    plan: free
+    dockerfilePath: ./Dockerfile
+    # Dockerfile mặc định nghe cổng 5000 và không nạp dữ liệu; trên Render cổng do biến PORT quy định,
+    # và db_init (tạo bảng, nạp dữ liệu mẫu, chạy lại không nhân đôi) phải chạy trước khi mở máy chủ.
+    dockerCommand: sh -c "python -m src.db_init && flask --app src.app:create_app run --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: kho-linh-kien-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: kho-linh-kien-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: kho-linh-kien-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: kho-linh-kien-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: kho-linh-kien-db
+          property: password
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEMO_PASSWORD
+        sync: false
+      - key: LOG_LEVEL
+        value: INFO
