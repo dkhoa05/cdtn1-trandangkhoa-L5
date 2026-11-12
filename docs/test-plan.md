@@ -52,4 +52,4 @@ Kiểm thử được coi là đủ khi bốn quy tắc đều có test luồng 
 - Test unit: chạy bằng `pytest` trên Python 3.10 trở lên, không cần cơ sở dữ liệu. Dữ liệu do `tests/conftest.py` dựng trong bộ nhớ (linh kiện 45 tại trung tâm 1, tồn 5, ngưỡng 3).
 - Test integration TC-11, TC-12: chạy bằng `RUN_PG_TESTS=1` trên PostgreSQL thật đã chạy `db_init`. Mỗi test tự tạo linh kiện riêng và xóa hẳn khi xong.
 - Test API và TC-10: chạy trên hệ thống dựng bằng `docker compose up -d --build`, dữ liệu mẫu do `seeds/001_demo.sql` nạp tự động. Dựng lại từ trạng thái sạch bằng `docker compose down -v` trước mỗi đợt chạy.
-- Tài khoản mẫu: `2` là kỹ thuật viên trung tâm 4, `101` là quản lý trung tâm 1.
+- Tài khoản mẫu: `2` là kỹ thuật viên trung tâm 4, `101` là quản lý trung tâm 1; cả hai đăng nhập bằng mật khẩu mẫu `DEMO_PASSWORD` trong `.env` (TD-10).

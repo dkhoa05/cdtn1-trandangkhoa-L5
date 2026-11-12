@@ -49,3 +49,9 @@ Minh chứng: `src/log_config.py` che các trường `password`, `mat_khau`, `to
 Trạng thái: ĐÃ LÀM
 
 Minh chứng: mọi dòng của `requirements.txt` dùng `==`; `pip-audit -r requirements.txt --no-deps` lần đầu báo 6 cảnh báo ở ba gói (Flask 3.0.3, pytest 8.3.3, python-dotenv 1.0.1); đã nâng lên Flask 3.1.3, pytest 9.0.3, python-dotenv 1.2.2 (commit `879f545`), chạy lại cho kết quả `No known vulnerabilities found`, và 54 test vẫn PASS trong container.
+
+## Hạn chế đã biết, chủ ý chưa xử lý ở phạm vi học phần
+
+1. Đăng nhập chưa giới hạn số lần thử sai và chưa khóa tài khoản, nên một người có thể thử mật khẩu liên tục; mỗi lần thử tốn khoảng 70 ms do scrypt. Hướng bổ sung: đếm số lần sai theo mã người dùng và địa chỉ gọi.
+2. Hệ thống chạy HTTP thường trên localhost, chưa có TLS; token nằm ở header `Authorization` nên khi triển khai thật cần đặt sau proxy có chứng chỉ (xem `docs/deployment-guide.md`, mục Known limits).
+3. Token đã cấp chưa thu hồi được trước khi hết hạn 8 giờ, và chưa có chức năng đổi mật khẩu.
