@@ -109,4 +109,49 @@ Two accounts are ready to use on the login page (the page has one button for eac
 
 ### Known limits
 
-The service speaks plain HTTP on localhost. In a real deployment it should sit behind a reverse proxy that terminates TLS; the app keeps its token in the `Authorization` header and sets no cookies, so no cookie flag needs changing. The container runs Flask's built-in server, which is enough for a demonstration; a production WSGI server and a real deployment to a public host are not part of this assignment.
+The service speaks plain HTTP on localhost. In a real deployment it should sit behind a reverse proxy that terminates TLS; the app keeps its token in the `Authorization` header and sets no cookies, so no cookie flag needs changing. The container runs Flask's built-in server, which is enough for a demonstration; a production WSGI server is not part of this assignment. A public demo on Render's free plan is described in section 6.
+
+
+## 6. Optional: public demo on Render (free tier)
+
+A public copy of the system runs at **https://kho-linh-kien.onrender.com**. It was created on 12/11/2026 on Render's free plan from the file `render.yaml` in this repository, which describes one Docker web service (`kho-linh-kien`) and one PostgreSQL database (`kho-linh-kien-db`). Sections 1 to 5 above are the required way to run the system; this section only records what was done for the public demo.
+
+### 6.1. Steps that were done
+
+1. Push the repository to GitHub with `render.yaml` and `docker-start.sh` at the root (the repository is public).
+2. Sign up at https://render.com using the GitHub account. No payment method was added, because both resources use the Free plan.
+3. In the Render Dashboard click New, then Blueprint, choose the repository `dkhoa05/cdtn1-trandangkhoa-L5`, branch `main`, and type a name for the Blueprint.
+4. Render reads `render.yaml` and lists the two resources to create. It asks for one value, `DEMO_PASSWORD`; the sample value from `.env.example` was typed there, so the password is not stored in the repository.
+5. Click Deploy Blueprint. Render builds the image from the `Dockerfile`, creates the database and starts the service with `sh docker-start.sh`, which runs `python -m src.db_init` and then the web server on the port Render provides. The first start loads the same sample data as in section 4.
+6. When the service shows Live, check it as in section 5 (the commands below use the public address).
+
+```
+curl -s https://kho-linh-kien.onrender.com/health
+```
+
+Expected: `{"db":"ok","status":"ok"}`. Then open the address in a browser and log in as user `101` with the sample password; the stock list of center 1 shows 123 parts.
+
+### 6.2. Environment variables on the platform
+
+| Variable | Where the value comes from |
+|---|---|
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Read from the Render database by `render.yaml` (`fromDatabase`); never written in the repository |
+| `SECRET_KEY` | Generated randomly by Render (`generateValue: true`) |
+| `DEMO_PASSWORD` | Typed in the Dashboard when the Blueprint is created (`sync: false`) |
+| `LOG_LEVEL` | `INFO`, set in `render.yaml` |
+| `PORT` | Set by Render; `docker-start.sh` uses it |
+
+No real secret is in the repository or in the Docker image.
+
+### 6.3. Limits of the free plan and of this demo
+
+- The free web service goes to sleep after 15 minutes without traffic. The first request after that takes about one minute; open the address once before using it.
+- The free database expires 30 days after creation (12/12/2026 for this one) and is deleted 14 days later unless upgraded. To keep the demo longer, delete the expired database, create a new one and deploy again; `db_init` loads the sample data again.
+- Anyone who knows the sample password can log in and change the sample data. The data can be rebuilt by redeploying, so this is accepted for a demo.
+- The service runs Flask's built-in server behind Render's HTTPS endpoint, which is enough for a demonstration and not meant for production.
+
+### 6.4. Problem met during the deploy
+
+| Symptom | Cause and fix |
+|---|---|
+| The first deploy failed with `sh: 1: python -m src.db_init && flask ... not found` and `Exited with status 127` | `render.yaml` first used `dockerCommand: sh -c "python ... && flask ..."`. Render kept the quotes, so the shell took the whole text as one command name. The commands were moved into `docker-start.sh` and the command became `sh docker-start.sh`; the next deploy went Live |
