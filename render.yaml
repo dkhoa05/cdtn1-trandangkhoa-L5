@@ -17,8 +17,9 @@ services:
     plan: free
     dockerfilePath: ./Dockerfile
     # Dockerfile mặc định nghe cổng 5000 và không nạp dữ liệu; trên Render cổng do biến PORT quy định,
-    # và db_init (tạo bảng, nạp dữ liệu mẫu, chạy lại không nhân đôi) phải chạy trước khi mở máy chủ.
-    dockerCommand: sh -c "python -m src.db_init && flask --app src.app:create_app run --host 0.0.0.0 --port $PORT"
+    # và db_init phải chạy trước khi mở máy chủ. Các bước đó nằm trong docker-start.sh; không viết thẳng
+    # "sh -c ..." ở đây vì Render giữ nguyên dấu nháy và shell coi cả chuỗi là một tên lệnh (lỗi "not found").
+    dockerCommand: sh docker-start.sh
     healthCheckPath: /health
     envVars:
       - key: DB_HOST
